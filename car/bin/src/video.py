@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+#-*- coding: utf-8 -*-
 # PyQt5 Video player
 
 from PyQt5 import QtCore, QtWidgets
@@ -10,7 +11,11 @@ from PyQt5.QtWidgets import QMainWindow, QWidget, QPushButton, QAction
 from PyQt5.QtGui import QPainter, QColor, QFont
 
 import sys
+sys.path.append('../../conf')
+
+import sys
 import conf
+from help import *
 
 class VideoWindow(QMainWindow, conf.conf):
 
@@ -63,8 +68,7 @@ class VideoWindow(QMainWindow, conf.conf):
         self.mediaPlayer.setPosition(position)
 
     def handleError(self):
-        self.playButton.setEnabled(False)
-        self.errorLabel.setText("Error: " + self.mediaPlayer.errorString())
+        pass
 
     def event(self, e):
         if e.type() == QtCore.QEvent.KeyPress:

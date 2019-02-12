@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+#-*- coding: utf-8 -*-
 # Server is stay in GAZ-66.
 
 import sys, time
@@ -15,11 +16,11 @@ from help import *
 conn = None
 
 class ServerThread(Thread, conf.conf):
+    tcpServer = None
+    threads = [] 
+    
     def __init__(self): 
         Thread.__init__(self) 
-
-    def __del__(self):
-        pass
 
     def run(self): 
         TCP_IP = self.confServerIP
@@ -30,18 +31,18 @@ class ServerThread(Thread, conf.conf):
         self.tcpServer.bind((TCP_IP, TCP_PORT)) 
         threads = [] 
 
-        self.tcpServer.listen(4) 
+        self.tcpServer.listen(4)
         while True:
             print("Multithreaded Python server : Waiting for connections from TCP clients...") 
             global conn
             (conn, (ip,port)) = self.tcpServer.accept() 
             newthread = ClientThread(ip, port) 
             newthread.start() 
-            threads.append(newthread)         
+            self.threads.append(newthread)         
 
-        for t in threads: 
+    def wait(self):
+        for t in self.threads: 
             t.join() 
-
 
 
 class ClientThread(Thread, conf.conf): 

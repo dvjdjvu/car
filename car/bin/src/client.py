@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+#-*- coding: utf-8 -*-
 # Client is stay in Remote.
 
 import sys,time
@@ -23,14 +24,14 @@ class Window(QDialog):
         super().__init__()
         self.flag=0
         self.chatTextField=QLineEdit(self)
-        self.chatTextField.resize(480,100)
-        self.chatTextField.move(10,350)
+        self.chatTextField.resize(480, 100)
+        self.chatTextField.move(10, 350)
         self.btnSend=QPushButton("Send",self)
-        self.btnSend.resize(480,30)
+        self.btnSend.resize(480, 30)
         self.btnSendFont=self.btnSend.font()
         self.btnSendFont.setPointSize(15)
         self.btnSend.setFont(self.btnSendFont)
-        self.btnSend.move(10,460)
+        self.btnSend.move(10, 460)
         self.btnSend.setStyleSheet("background-color: #F7CE16")
         self.btnSend.clicked.connect(self.send)
  
@@ -45,7 +46,7 @@ class Window(QDialog):
  
         splitter.addWidget(self.chat)
         splitter.addWidget(self.chatTextField)
-        splitter.setSizes([400,100])
+        splitter.setSizes([400, 100])
  
         splitter2=QSplitter(QtCore.Qt.Vertical)
         splitter2.addWidget(splitter)
@@ -67,6 +68,9 @@ class Window(QDialog):
         self.chat.append(textFormatted)
         tcpClientA.send(text.encode())
         self.chatTextField.setText("")
+        
+    def exitCall(self):
+        sys.exit(app.exec_())    
  
 class ClientThread(Thread, conf.conf):
     
@@ -90,7 +94,7 @@ class ClientThread(Thread, conf.conf):
  
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, service_shutdown)
-    signal.signal(signal.SIGINT,  service_shutdown)     
+    signal.signal(signal.SIGINT,  service_shutdown)
     
     app = QApplication(sys.argv)
     window = Window()

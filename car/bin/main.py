@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+#-*- coding: utf-8 -*-
 
 """
 Created on 12.07.2019
@@ -15,23 +16,34 @@ sys.path.append('../conf')
 
 import conf
 import server
+import streamer
 from help import *
 
 def ProcessingInit(conf):
     """
     Запускаем сервер или клиент.
+    
+    Args:
+            conf:   (class(conf)) Конфигурация.
     """
     
     if conf.confType == 'server' :
+        
+        # Запускаем сервер по приему команд.
         serverThread = server.ServerThread()
-        serverThread.start()        
+        serverThread.start()
+        
+        # Запускаем сервер передачи видео.
+        streamerThread = streamer.StreamerThread()
+        streamerThread.start()
+        
+        serverThread.wait()
+        streamerThread.join()
+        
     elif conf.confType == 'client' :
         pass
     else :
         Print('[info]: conf.confType is not correct: ', conf.confType)
-        return False
-        
-    return True
 
 def ProcessingWatchdog(): 
     """
@@ -41,8 +53,6 @@ def ProcessingWatchdog():
     _conf = conf.conf()
     
     while True:
-        print('###################################################')
-        
         pid = os.fork()
         if pid == 0: 
             # Worker.
@@ -50,7 +60,7 @@ def ProcessingWatchdog():
             # Меняем имя процесса.
             set_proc_name('car[' + _conf.confType + ']')
             
-            #ProcessingInit(_conf)
+            ProcessingInit(_conf)
             
             break
         elif pid > 0: 

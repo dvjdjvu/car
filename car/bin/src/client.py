@@ -10,7 +10,11 @@ import socket
 from threading import Thread 
 from socketserver import ThreadingMixIn 
  
+import sys
+sys.path.append('../../conf')
+
 import conf
+from help import *
  
 tcpClientA = None
  
@@ -85,6 +89,9 @@ class ClientThread(Thread, conf.conf):
  
  
 if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, service_shutdown)
+    signal.signal(signal.SIGINT,  service_shutdown)     
+    
     app = QApplication(sys.argv)
     window = Window()
     clientThread=ClientThread(window)

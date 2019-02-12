@@ -6,6 +6,9 @@ import socket
 from threading import Thread 
 from socketserver import ThreadingMixIn 
 
+import sys
+sys.path.append('../../conf')
+
 import conf
 from help import *
 
@@ -15,20 +18,23 @@ class ServerThread(Thread, conf.conf):
     def __init__(self): 
         Thread.__init__(self) 
 
+    def __del__(self):
+        pass
+
     def run(self): 
         TCP_IP = self.confServerIP
         TCP_PORT = self.confServerPort
         BUFFER_SIZE = self.confServerBufferSize
-        tcpServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-        tcpServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
-        tcpServer.bind((TCP_IP, TCP_PORT)) 
+        self.tcpServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        self.tcpServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
+        self.tcpServer.bind((TCP_IP, TCP_PORT)) 
         threads = [] 
 
-        tcpServer.listen(4) 
+        self.tcpServer.listen(4) 
         while True:
             print("Multithreaded Python server : Waiting for connections from TCP clients...") 
             global conn
-            (conn, (ip,port)) = tcpServer.accept() 
+            (conn, (ip,port)) = self.tcpServer.accept() 
             newthread = ClientThread(ip, port) 
             newthread.start() 
             threads.append(newthread)         
@@ -51,6 +57,11 @@ class ClientThread(Thread, conf.conf):
             global conn
             data = conn.recv(2048) 
             print(data)
+            
+            answer = '{"type": "' + conf.conf.confType + '", "cmd": "answer", "status": "Ok"}'
+            conn.send(answer.encode())
+            
+            # Дальше здесь будут обрабатываться полученные команды.
 
 
 if __name__ == '__main__':

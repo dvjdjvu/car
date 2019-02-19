@@ -24,11 +24,11 @@ class StreamerThread(Thread, conf.conf):
         Thread.__init__(self)     
     
     def run(self):
-        with picamera.PiCamera(resolution = str(conf.conf.confVideoWidth) + 'x' + str(conf.conf.confVideoHeight) , framerate = conf.conf.confVideoRate) as camera:
+        with picamera.PiCamera(resolution = str(conf.conf.VideoWidth) + 'x' + str(conf.conf.VideoHeight) , framerate = conf.conf.VideoRate) as camera:
             output = StreamingOutput()
             camera.start_recording(output, format = 'mjpeg')
             try:
-                address = ('', conf.conf.confServerPort)
+                address = ('', conf.conf.ServerPort)
                 server = StreamingServer(address, StreamingHandler)
                 server.serve_forever()
             finally:

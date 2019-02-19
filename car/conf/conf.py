@@ -4,20 +4,20 @@
 
 class conf :
     
-    confType = "server" # "server"/"client"
+    Type = "server" # "server"/"client"
     
-    #confVideoUrl = "http://192.168.2.71:8080/?action=stream"
-    confVideoUrl = "http://192.168.2.71:8000/stream.mjpg"
+    #VideoUrl = "http://192.168.2.71:8080/?action=stream"
+    VideoUrl = "http://192.168.2.71:8080/stream.mjpg"
     
-    #confVideoServer = 
+    #VideoServer = 
     
-    confServerIP = "127.0.0.1"
-    confServerPort = 8080
-    confServerBufferSize = 100
+    ServerIP = "127.0.0.1"
+    ServerPort = 8080
+    ServerBufferSize = 100
     
     # Video settings
-    confVideoRate = 24
-    confVideoWidth = 640
-    confVideoHeight = 480
+    VideoRate = 24
+    VideoWidth = 640
+    VideoHeight = 480
     
     

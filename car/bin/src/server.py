@@ -33,7 +33,7 @@ class ServerThread(Thread, conf.conf):
 
         self.tcpServer.listen(4)
         while True:
-            print("Multithreaded Python server : Waiting for connections from TCP clients...") 
+            print("Car server up : Waiting for connections from TCP clients...") 
             global conn
             (conn, (ip,port)) = self.tcpServer.accept() 
             newthread = ClientThread(ip, port) 
@@ -59,11 +59,13 @@ class ClientThread(Thread, conf.conf):
             data = conn.recv(2048) 
             print(data)
             
-            answer = '{"type": "' + conf.conf.confType + '", "cmd": "answer", "status": "Ok"}'
+            answer = '{"type": "car", "cmd": "answer", "status": "Ok"}'
             conn.send(answer.encode())
             
             # Дальше здесь будут обрабатываться полученные команды.
 
+    def handler(self):
+        pass
 
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, service_shutdown)

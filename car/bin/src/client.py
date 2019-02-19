@@ -91,6 +91,18 @@ class ClientThread(Thread, conf.conf):
            window.chat.append(data.decode("utf-8"))
        tcpClientA.close() 
  
+class Remote():
+    
+    def __init__(self):
+        pass
+    
+    def start(self):
+        app = QApplication(sys.argv)
+        window = Window()
+        clientThread=ClientThread(window)
+        clientThread.start()
+        window.exec()
+        sys.exit(app.exec_())        
  
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, service_shutdown)

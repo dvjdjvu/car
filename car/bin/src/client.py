@@ -193,22 +193,13 @@ class ClientThread(Thread, conf.conf):
         Thread.__init__(self) 
         self.window = window
   
-    def connect(self):
-        try :
-            tcpClientA.connect((conf.conf.ServerIP, conf.conf.ServerPort))
-            
-            return True
-        except :
-            
-            return False 
-  
     def run(self): 
         global tcpClientA
         tcpClientA = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
         while True:
             try :
-                tcpClientA.connect((conf.conf.ServerIP, conf.conf.ServerPort))
+                tcpClientA.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
             except :
                 self.window.labelText.setText("Отсутствует управление.")
                 self.window.labelText.show()

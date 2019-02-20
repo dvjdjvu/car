@@ -157,7 +157,7 @@ class VideoWindow(QMainWindow, conf.conf):
             print("Нажата клавиша на клавиатуре")
             print("Код:", e.key(), ", текст:", e.text())
             
-            cmd = '{"type": "remote", "cmd": "answer", "status": "Ok"}'
+            cmd = '{"type": "remote", "cmd": "' + e.text() + '", "status": "Ok"}'
             
             try:
                 tcpClientA.send(cmd.encode())
@@ -195,22 +195,36 @@ class ClientThread(Thread, conf.conf):
   
     def run(self): 
         global tcpClientA
-        tcpClientA = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
-        while True:
+        connected = False
+        
+        while not connected:
+            print('while start ', connected)
+            
             try :
+                tcpClientA = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 tcpClientA.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
+                connected = True
+                print('connect ok')
             except :
                 self.window.labelText.setText("Отсутствует управление.")
                 self.window.labelText.show()
                 
                 time.sleep(2)
+                connected = False
+                print('connect continue')
                 continue
-                
             
             while True:
                 try :
                     data = tcpClientA.recv(conf.conf.ServerBufferSize)
+                    data = data.decode()
+                    if data == '' or data == None :
+                        connected = False
+                        print('break recv')
+                        tcpClientA.close() 
+                        break
+                    print('data', data)
                 except :
                     break
 

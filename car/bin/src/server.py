@@ -24,7 +24,7 @@ class ServerThread(Thread, conf.conf):
 
     def run(self): 
         TCP_IP = conf.conf.ServerIP
-        TCP_PORT = conf.conf.ServerPort
+        TCP_PORT = conf.conf.controlServerPort
         BUFFER_SIZE = conf.conf.ServerBufferSize
         self.tcpServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
         self.tcpServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 

@@ -20,7 +20,7 @@ class BColors:
 
 def service_shutdown(signum, frame):
     Print('[info]: Caught signal %d' % signum)
-    raise ServerExit
+    os._exit(1)
 
 def set_proc_name(newName):
     """

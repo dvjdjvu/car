@@ -14,9 +14,10 @@ from http import server
 import sys
 sys.path.append('../../conf')
 
-import conf
 from help import *
-from camera import *
+import conf
+import camera
+
 
 class StreamerThread(Thread, conf.conf):
     
@@ -24,12 +25,12 @@ class StreamerThread(Thread, conf.conf):
         Thread.__init__(self)     
     
     def run(self):
-        with picamera.PiCamera(resolution = str(conf.conf.VideoWidth) + 'x' + str(conf.conf.VideoHeight) , framerate = conf.conf.VideoRate) as camera:
-            output = StreamingOutput()
-            camera.start_recording(output, format = 'mjpeg')
+        with picamera.PiCamera(resolution = str(conf.conf.VideoWidth) + 'x' + str(conf.conf.VideoHeight) , framerate = conf.conf.VideoRate) as Camera:
+            output = camera.StreamingOutput()
+            Camera.start_recording(output, format = 'mjpeg')
             try:
-                address = ('', conf.conf.ServerPort)
-                server = StreamingServer(address, StreamingHandler)
+                address = (conf.conf.ServerIP, conf.conf.videoServerPort)
+                server = camera.StreamingServer(address, camera.StreamingHandler)
                 server.serve_forever()
             finally:
-                camera.stop_recording()
+                Camera.stop_recording()

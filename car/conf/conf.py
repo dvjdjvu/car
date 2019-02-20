@@ -10,7 +10,8 @@ class conf :
     VideoUrl = "http://192.168.2.71:8000/stream.mjpg"
     
     ServerIP = "192.168.2.71"
-    ServerPort = 8001
+    videoServerPort = 8000
+    controlServerPort = 8001
     ServerBufferSize = 100
     
     # Video settings

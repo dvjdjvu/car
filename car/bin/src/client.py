@@ -214,9 +214,13 @@ class ClientThread(Thread, conf.conf):
                     data = tcpClientA.recv(conf.conf.ServerBufferSize)
                     data = data.decode()
                     if data == '' :
+                        self.window.labelControlStatus.setText("У")
+                        self.window.labelControlStatus.show()
+                        
                         connected = False
                         tcpClientA.close() 
                         break
+                    print(data)
                 except :
                     break
 

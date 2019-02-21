@@ -25,7 +25,7 @@ tcpClientA = None
 
 class VideoWindow(QMainWindow, conf.conf):
 
-    textSize = 24
+    textSize = 48
     timerVideoRecconect = QtCore.QTimer()
     
     def __init__(self, parent = None):
@@ -57,20 +57,20 @@ class VideoWindow(QMainWindow, conf.conf):
         # Set widget to contain window contents
         self.mainWidget.setLayout(layoutVideo)
         
-        self.labelText = QLabel(self.videoWidget)
-        self.labelText.setStyleSheet("QLabel { background-color : black; color : red; font-size:" + str(self.textSize) + "px}")
-        self.labelText.setGeometry(0, 0, self.mainWidget.width(), self.textSize + 10)
-        #self.labelText.setAttribute(Qt.WA_TranslucentBackground)
-        self.labelText.raise_()
-        self.labelText.show()        
+        self.labelVideoStatus = QLabel(self.videoWidget)
+        self.labelVideoStatus.setStyleSheet("QLabel { background-color : black; color : red; font-size:" + str(self.textSize) + "px}")
+        self.labelVideoStatus.setGeometry(0, 0, self.textSize, self.textSize)
+        #self.labelVideoStatus.setAttribute(Qt.WA_TranslucentBackground)
+        self.labelVideoStatus.raise_()
+        self.labelVideoStatus.show()
         
-        '''
-        self.labelText2 = QLabel(self.videoWidget)
-        self.labelText2.setGeometry(0, 0, self.textSize, self.textSize)
-        self.labelText2.setStyleSheet("QLabel { background-color : black; color : green; font-size:" + str(self.textSize) + "px}")
-        self.labelText2.raise_()
-        self.labelText2.show()      
-        '''
+        
+        self.labelControlStatus = QLabel(self.videoWidget)
+        self.labelControlStatus.setGeometry(0, 0, self.textSize, self.textSize)
+        self.labelControlStatus.setStyleSheet("QLabel { background-color : black; color : red; font-size:" + str(self.textSize) + "px}")
+        self.labelControlStatus.raise_()
+        self.labelControlStatus.show()
+        
         
         self.mediaPlayer.setMedia(QMediaContent(QUrl(conf.conf.VideoUrl)))
         self.mediaPlayer.play()
@@ -84,8 +84,9 @@ class VideoWindow(QMainWindow, conf.conf):
         self.mediaPlayer.play()
 
     def resizeEvent(self, e):
-        self.labelText.move(0.0, self.mainWidget.height() - self.labelText.height() - 10.0)
-        #self.labelText2.move(10.0, 10.0)
+        self.labelVideoStatus.move(10.0, self.mainWidget.height() - self.textSize)
+        self.labelControlStatus.move(self.mainWidget.width() - self.textSize, self.mainWidget.height() - self.textSize)
+        pass
 
     def exitCall(self):
         sys.exit(app.exec_())
@@ -108,22 +109,21 @@ class VideoWindow(QMainWindow, conf.conf):
         elif status == QMediaPlayer.LoadedMedia :
             pass
         elif status == QMediaPlayer.StalledMedia :
-            self.labelText.setText("");
-            self.labelText.hide()
+            self.labelVideoStatus.hide()
         elif status == QMediaPlayer.BufferingMedia :
             pass
         elif status == QMediaPlayer.BufferedMedia :
             pass
         elif status == QMediaPlayer.EndOfMedia :
-            self.labelText.setText("Отсутствует видео.");
-            self.labelText.show()
+            self.labelVideoStatus.setText("В");
+            self.labelVideoStatus.show()
             
-            self.timerVideoRecconect.start(conf.conf.timeRecconect)
+            self.timerVideoRecconect.start(conf.conf.timeRecconect * 1000)
         elif status == QMediaPlayer.InvalidMedia :
-            self.labelText.setText("Отсутствует видео.")
-            self.labelText.show()
+            self.labelVideoStatus.setText("В");
+            self.labelVideoStatus.show()
             
-            self.timerVideoRecconect.start(conf.conf.timeRecconect)
+            self.timerVideoRecconect.start(conf.conf.timeRecconect * 1000)
 
     def positionChanged(self, position):
         self.positionSlider.setValue(position)
@@ -143,14 +143,9 @@ class VideoWindow(QMainWindow, conf.conf):
         message = "[error]: "
         if errorString:
             message += errorString
-            
-            #self.timerVideoRecconect.start(conf.conf.timeRecconect)
         else:
             error = int(self.mediaPlayer.error())
             message += F' self.mediaPlayer.currentMedia().canonicalUrl()'
-        
-        #self.labelText.setText(message);
-        #self.labelText2.setText('*');
 
     def event(self, e):
         if e.type() == QtCore.QEvent.KeyPress:
@@ -161,9 +156,10 @@ class VideoWindow(QMainWindow, conf.conf):
             
             try:
                 tcpClientA.send(cmd.encode())
+                self.labelControlStatus.hide()
             except:
-                self.labelText.setText("Отсутствует управление.")
-                self.labelText.show()
+                self.labelControlStatus.setText("У")
+                self.labelControlStatus.show()
                 
             
         elif e.type() == QtCore.QEvent.Close:
@@ -199,32 +195,27 @@ class ClientThread(Thread, conf.conf):
         connected = False
         
         while not connected:
-            print('while start ', connected)
-            
             try :
                 tcpClientA = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 tcpClientA.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
                 connected = True
-                print('connect ok')
+                self.labelControlStatus.hide()
             except :
-                self.window.labelText.setText("Отсутствует управление.")
-                self.window.labelText.show()
+                self.window.labelControlStatus.setText("У")
+                self.window.labelControlStatus.show()
                 
-                time.sleep(2)
+                time.sleep(conf.conf.timeRecconect)
                 connected = False
-                print('connect continue')
                 continue
             
             while True:
                 try :
                     data = tcpClientA.recv(conf.conf.ServerBufferSize)
                     data = data.decode()
-                    if data == '' or data == None :
+                    if data == '' :
                         connected = False
-                        print('break recv')
                         tcpClientA.close() 
                         break
-                    print('data', data)
                 except :
                     break
 

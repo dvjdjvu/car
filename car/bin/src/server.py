@@ -56,7 +56,9 @@ class ClientThread(Thread, conf.conf):
     def run(self): 
         while True : 
             global conn
-            data = conn.recv(2048) 
+            data = conn.recv(2048)
+            if data == '' :
+                break
             print('data', data.decode())
             
             answer = '{"type": "car", "cmd": "answer", "status": "Ok"}'

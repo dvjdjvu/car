@@ -19,6 +19,6 @@ class conf :
     VideoWidth = 640
     VideoHeight = 480
     
-    timeRecconect = 5000
+    timeRecconect = 3
     
     

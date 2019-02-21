@@ -199,13 +199,14 @@ class ClientThread(Thread, conf.conf):
                 tcpClientA = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 tcpClientA.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
                 connected = True
-                self.labelControlStatus.hide()
-            except :
+                self.window.labelControlStatus.hide()
+            except ConnectionError as e:
                 self.window.labelControlStatus.setText("У")
                 self.window.labelControlStatus.show()
                 
                 time.sleep(conf.conf.timeRecconect)
                 connected = False
+                
                 continue
             
             while True:

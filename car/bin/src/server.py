@@ -59,7 +59,7 @@ class ClientThread(Thread, conf.conf):
             data = conn.recv(2048)
             if data == '' :
                 break
-            print('data', data.decode())
+            print('data', data.decode(), data, 'end')
             
             answer = '{"type": "car", "cmd": "answer", "status": "Ok"}'
             conn.send(answer.encode())

@@ -1,0 +1,6 @@
+Package: car-remote
+Version: 1.0.0
+Section: libs
+Architecture: amd64
+Maintainer: Sergeev Dmitry <djvu@inbox.ru>
+Description: Car mobile remote.

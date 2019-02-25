@@ -1,3 +1,5 @@
+#!/bin/bash
+
 DEB_CAR=deb_car
 DEB_REMOTE=deb_remote
 DEBIAN_CAR=$DEB_CAR/DEBIAN

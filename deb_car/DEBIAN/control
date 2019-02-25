@@ -1,6 +1,6 @@
 Package: car
 Version: 1.0.0
 Section: python
-Architecture: source
+Architecture: all
 Maintainer: Sergeev Dmitry <djvu@inbox.ru>
 Description: Car mobile server.

@@ -17,7 +17,8 @@ import time
 import conf
 import server
 import streamer
-from help import *
+
+from helper.proc import proc
 
 def ProcessingInit(conf):
     """
@@ -52,7 +53,7 @@ def ProcessingWatchdog():
             # Worker.
             print('child ', os.getpid())
             # Меняем имя процесса.
-            set_proc_name('car[server]')
+            proc.setName('car[server]')
             
             ProcessingInit(Conf)
             
@@ -61,7 +62,7 @@ def ProcessingWatchdog():
             # Watchdog.
             print('watchdog ', os.getpid())
             
-            set_proc_name('car[watchdog]')
+            proc.setName('car[watchdog]')
             
             finished = os.waitpid(pid, 0) # Ожидаем завершение работы worker-a.
             Print('[critical]: worker finished:', finished)
@@ -78,7 +79,7 @@ if __name__ == "__main__":
     Программа управления машинкой.
     """
     
-    signal.signal(signal.SIGTERM, service_shutdown)
-    signal.signal(signal.SIGINT,  service_shutdown)     
+    signal.signal(signal.SIGTERM, proc.shutdown)
+    signal.signal(signal.SIGINT,  proc.shutdown)     
     
     ProcessingWatchdog()

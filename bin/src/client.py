@@ -19,7 +19,7 @@ sys.path.append('../../conf')
 
 import sys
 import conf
-from help import *
+import help
 
 tcpClientA = None
 

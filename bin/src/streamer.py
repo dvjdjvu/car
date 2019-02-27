@@ -14,7 +14,6 @@ from http import server
 import sys
 sys.path.append('../../conf')
 
-from help import *
 import conf
 import camera
 

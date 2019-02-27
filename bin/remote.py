@@ -17,15 +17,18 @@ import time
 
 import conf
 import client
-from help import *
+
+import signal
+
+from helper.proc import proc
 
 if __name__ == "__main__":
     """
     Программа управления машинкой.
     """
     
-    signal.signal(signal.SIGTERM, service_shutdown)
-    signal.signal(signal.SIGINT,  service_shutdown)
+    signal.signal(signal.SIGTERM, proc.shutdown)
+    signal.signal(signal.SIGINT,  proc.shutdown)
     
     remote = client.Remote()
     remote.start()

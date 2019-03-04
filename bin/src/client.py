@@ -18,6 +18,7 @@ import sys, os
 sys.path.append('../../conf')
 
 import sys
+import time
 import conf
 import help
 
@@ -200,7 +201,7 @@ class ClientThread(Thread, conf.conf):
                 tcpClientA.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
                 connected = True
                 self.window.labelControlStatus.hide()
-            except ConnectionError as e:
+            except socket.error as e:
                 self.window.labelControlStatus.setText("У")
                 self.window.labelControlStatus.show()
                 

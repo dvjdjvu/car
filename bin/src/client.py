@@ -20,7 +20,7 @@ sys.path.append('../../conf')
 import sys
 import time
 import conf
-import help
+import helper
 
 tcpClientA = None
 
@@ -146,7 +146,8 @@ class VideoWindow(QMainWindow, conf.conf):
             message += errorString
         else:
             error = int(self.mediaPlayer.error())
-            message += F' self.mediaPlayer.currentMedia().canonicalUrl()'
+            #message += F' self.mediaPlayer.currentMedia().canonicalUrl()'
+            message += 'self.mediaPlayer.currentMedia().canonicalUrl()'
 
     def event(self, e):
         if e.type() == QtCore.QEvent.KeyPress:

@@ -22,12 +22,16 @@ import time
 import conf
 import helper
 
-tcpClientA = None
+import GHKeyboard
 
 class VideoWindow(QMainWindow, conf.conf):
 
     textSize = 48
     timerVideoRecconect = QtCore.QTimer()
+    tcpClient = None
+    
+    def setTcpClient(self, tcpClient):
+        self.tcpClient = tcpClient
     
     def __init__(self, parent = None):
         super(VideoWindow, self).__init__(parent)
@@ -157,7 +161,7 @@ class VideoWindow(QMainWindow, conf.conf):
             cmd = '{"type": "remote", "cmd": "' + e.text() + '", "status": "Ok"}'
             
             try:
-                tcpClientA.send(cmd.encode())
+                self.tcpClient.send(cmd.encode())
                 self.labelControlStatus.hide()
             except:
                 self.labelControlStatus.setText("У")
@@ -185,21 +189,25 @@ class VideoWindow(QMainWindow, conf.conf):
     
 class ClientThread(Thread, conf.conf):
     
+    tcpClient = None
+    
     timerServerRecconect = QtCore.QTimer()
     
     def __init__(self, window): 
         Thread.__init__(self) 
         self.window = window
   
+    def getSocket(self):
+        return self.tcpClient
+  
     def run(self): 
-        global tcpClientA
         
         connected = False
         
         while not connected:
             try :
-                tcpClientA = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                tcpClientA.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
+                self.tcpClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.tcpClient.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
                 connected = True
                 self.window.labelControlStatus.hide()
             except socket.error as e:
@@ -208,27 +216,30 @@ class ClientThread(Thread, conf.conf):
                 
                 time.sleep(conf.conf.timeRecconect)
                 connected = False
+                self.tcpClient = None
                 
                 continue
             
             while True:
                 try :
-                    data = tcpClientA.recv(conf.conf.ServerBufferSize)
+                    data = self.tcpClient.recv(conf.conf.ServerBufferSize)
                     data = data.decode()
                     if data == '' :
                         self.window.labelControlStatus.setText("У")
                         self.window.labelControlStatus.show()
                         
                         connected = False
-                        tcpClientA.close() 
+                        self.tcpClient.close() 
                         break
                     print(data)
                 except :
                     break
 
-        tcpClientA.close() 
+        self.tcpClient.close() 
     
 class Remote():
+    
+    tcpClient = None
     
     def start(self):
         app = QApplication(sys.argv)
@@ -238,7 +249,14 @@ class Remote():
         player.show()
         
         clientThread = ClientThread(player)
-        clientThread.start()        
+        clientThread.start()
+        self.tcpClient = clientThread.getSocket()
+        
+        keyboard = GHKeyboard.GHK(player)
+        
+        # Передауем указатель на сокет.
+        player.setTcpClient(self.tcpClient)
+        keyboard.setTcpClient(self.tcpClient)
         
         sys.exit(app.exec_())  
 

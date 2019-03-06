@@ -6,6 +6,9 @@ import time                             # Импортируем класс дл
 import sys, traceback                   # Импортируем библиотеки для обработки исключений
 import os
 
+import json
+import socket
+
 class GHK():
     
     #pins = [2, 3, 4, 17, 27, 22, 10, 9, 11, 5, 6, 13, 19, 26, 14, 15, 18, 23, 24, 25, 8, 7, 12, 16, 20, 21]
@@ -14,7 +17,14 @@ class GHK():
     Bouncetime = 50
     pins = None
 
-    def __init__(self):
+    tcpClient = None
+    
+    def setTcpClient(self, tcpClient):
+        self.tcpClient = tcpClient    
+
+    def __init__(self, window):
+        self.window = window
+        
         self.pins = {4 :  {'pin': 'Select', 'status': False, 'callback': self.callbackSelect}, 
                      5 :  {'pin': 'Up',     'status': False, 'callback': self.callbackUp}, 
                      6 :  {'pin': 'Down',   'status': False, 'callback': self.callbackDown}, 
@@ -38,48 +48,65 @@ class GHK():
             GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)        
             GPIO.add_event_detect(pin, GPIO.BOTH, callback=p['callback'], bouncetime=self.Bouncetime)
     
+    def sendCmd(self, pin):
+        pin['status'] = not pin['status']
+        
+        cmd = {}
+        cmd['type'] = 'remote'
+        cmd['cmd'] = pin['pin']
+        cmd['status'] = pin['status']
+        
+        print(pin, cmd)
+        
+        try:
+            self.window.tcpClient.send(json.dumps(cmd, ensure_ascii=False))
+            self.window.labelControlStatus.hide()
+        except:
+            self.window.labelControlStatus.setText("У")
+            self.window.labelControlStatus.show()
+    
     def callbackSelect(self, pin) :
-        p = self.pins[pin]
-        p['status'] = not p['status']
-        print('press', p['pin'], p['status'])
+        self.sendCmd(self.pins[pin])
     
     def callbackUp(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
     
     def callbackDown(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
     
     def callbackLeft(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
     
     def callbackRight(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
     
     def callbackA(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
     
     def callbackTR(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
     
     def callbackTL(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
     
     def callbackB(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
     
     def callbackX(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
     
     def callbackY(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
     
     def callbackStart(self, pin) :
-        print('press', pin)
+        self.sendCmd(self.pins[pin])
    
 
+'''
 keyboard = GHK()
         
 while True:                    
     time.sleep(5.1)
            
 os._exit(0)
+'''

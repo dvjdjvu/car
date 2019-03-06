@@ -67,6 +67,7 @@ class VideoWindow(QMainWindow, conf.conf):
         self.labelVideoStatus.setGeometry(0, 0, self.textSize, self.textSize)
         #self.labelVideoStatus.setAttribute(Qt.WA_TranslucentBackground)
         self.labelVideoStatus.raise_()
+        self.labelVideoStatus.setText("В");
         self.labelVideoStatus.show()
         
         
@@ -74,6 +75,7 @@ class VideoWindow(QMainWindow, conf.conf):
         self.labelControlStatus.setGeometry(0, 0, self.textSize, self.textSize)
         self.labelControlStatus.setStyleSheet("QLabel { background-color : black; color : red; font-size:" + str(self.textSize) + "px}")
         self.labelControlStatus.raise_()
+        self.labelControlStatus.setText("У")
         self.labelControlStatus.show()
         
         
@@ -155,6 +157,11 @@ class VideoWindow(QMainWindow, conf.conf):
 
     def event(self, e):
         if e.type() == QtCore.QEvent.KeyPress:
+            if e.key() == QtCore.Qt.Key_Escape:
+                os._exit(1)
+                
+        '''
+        if e.type() == QtCore.QEvent.KeyPress:
             print("Нажата клавиша на клавиатуре")
             print("Код:", e.key(), ", текст:", e.text())
             
@@ -173,8 +180,9 @@ class VideoWindow(QMainWindow, conf.conf):
             os._exit(1)
         elif e.type() == QtCore.QEvent.MouseButtonPress:
             print("Щелчок мышью. Координаты:", e.x(), e.y())
-            
+        ''' 
         return QtWidgets.QWidget.event(self, e) # Отправляем дальше
+    
     '''
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape and self.isFullScreen():
@@ -246,13 +254,22 @@ class Remote():
         
         player = VideoWindow()
         player.resize(640, 480)
-        player.show()
+        #player.show()
+        player.showFullScreen()
         
         clientThread = ClientThread(player)
         clientThread.start()
-        self.tcpClient = clientThread.getSocket()
+        
+        while True :
+            self.tcpClient = clientThread.getSocket()
+            if self.tcpClient :
+                break;
+            else :
+                time.sleep(0.2)
         
         keyboard = GHKeyboard.GHK(player)
+        
+        print("self.tcpClient", self.tcpClient)
         
         # Передауем указатель на сокет.
         player.setTcpClient(self.tcpClient)

@@ -56,12 +56,15 @@ class GHK():
         cmd['cmd'] = pin['pin']
         cmd['status'] = pin['status']
         
-        print(pin, cmd)
+        print(cmd)
         
         try:
-            self.window.tcpClient.send(json.dumps(cmd, ensure_ascii=False))
+            self.tcpClient.send(json.dumps(cmd, ensure_ascii=False).encode())
             self.window.labelControlStatus.hide()
         except:
+            
+            print("error", self.tcpClient)
+            
             self.window.labelControlStatus.setText("У")
             self.window.labelControlStatus.show()
     

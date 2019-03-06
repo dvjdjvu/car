@@ -11,7 +11,6 @@ import sys
 sys.path.append('../../conf')
 
 import conf
-from help import *
 
 conn = None
 

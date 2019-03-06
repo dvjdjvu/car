@@ -17,8 +17,10 @@ import time
 import conf
 import server
 import streamer
+import signal
 
 from helper.proc import proc
+from helper.log import log
 
 def ProcessingInit(conf):
     """
@@ -65,13 +67,13 @@ def ProcessingWatchdog():
             proc.setName('car[watchdog]')
             
             finished = os.waitpid(pid, 0) # Ожидаем завершение работы worker-a.
-            Print('[critical]: worker finished:', finished)
+            log.Print('[critical]: worker finished:', finished)
             
             # Время(секунды) через которое поднимаем воркер в случае падения.
             time.sleep(5)
-            Print('[info]: restart')
+            log.Print('[info]: restart')
         else : 
-            Print('[error]: os.fork()')
+            log.Print('[error]: os.fork()')
         
 
 if __name__ == "__main__":

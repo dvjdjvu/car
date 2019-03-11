@@ -42,7 +42,7 @@ class VideoWindow(QMainWindow, conf.conf):
         self.videoWidget = QVideoWidget()
         self.setCentralWidget(self.mainWidget)
 
-        self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.StreamPlayback)
+        self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.LowLatency)
         self.mediaPlayer.error.connect(self.handleError)
         #self.mediaPlayer.error.connect(self.displayErrorMessage)
         self.mediaPlayer.setVideoOutput(self.videoWidget)
@@ -268,8 +268,6 @@ class Remote():
                 time.sleep(0.2)
         
         keyboard = GHKeyboard.GHK(player)
-        
-        print("self.tcpClient", self.tcpClient)
         
         # Передауем указатель на сокет.
         player.setTcpClient(self.tcpClient)

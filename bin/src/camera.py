@@ -8,6 +8,11 @@ import socketserver
 from threading import Condition
 from http import server
 
+import sys, os
+sys.path.append('../../conf')
+
+import conf
+
 PAGE="""\
 <html>
 <head>
@@ -15,7 +20,7 @@ PAGE="""\
 </head>
 <body>
 <h1>PiCamera MJPEG Streaming</h1>
-<img src="stream.mjpg" width="640" height="480" />
+<img src="stream.mjpg" width="480" height="320" />
 </body>
 </html>
 """

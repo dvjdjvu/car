@@ -20,12 +20,16 @@ import client
 
 import signal
 
+from shutil import copyfile
 from helper.proc import proc
 
 if __name__ == "__main__":
     """
     Программа управления машинкой.
     """
+    
+    # Копирование ярлыка на рабочий стол.
+    copyfile('/usr/share/applications/remote.desktop', '~/Desktop/')
     
     signal.signal(signal.SIGTERM, proc.shutdown)
     signal.signal(signal.SIGINT,  proc.shutdown)

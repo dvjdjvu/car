@@ -1,3 +1,7 @@
 #!/bin/bash
+
+chmod u+x /usr/share/applications/remote.desktop
+cp /usr/share/applications/remote.desktop /etc/xdg/autostart/
+
 ldconfig
 exit 0

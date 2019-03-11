@@ -19,8 +19,8 @@ import conf
 import client
 
 import signal
+import getpass
 
-from shutil import copyfile
 from helper.proc import proc
 
 if __name__ == "__main__":
@@ -28,8 +28,8 @@ if __name__ == "__main__":
     Программа управления машинкой.
     """
     
-    # Копирование ярлыка на рабочий стол.
-    copyfile('/usr/share/applications/remote.desktop', '~/Desktop/')
+    # Копирование ярлыка программы на рабочий стол.
+    os.system("cp /usr/share/applications/remote.desktop" + getpass.getuser() + "/Desktop")
     
     signal.signal(signal.SIGTERM, proc.shutdown)
     signal.signal(signal.SIGINT,  proc.shutdown)

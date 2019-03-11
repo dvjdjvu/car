@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Remote
+Name[ru]=Управление
+Comment=Remote mobile car
+Comment[ru]=Управление машинкой
+Exec=/usr/local/car/bin/remote.py
+Path=/usr/local/car/bin
+Terminal=false
+Type=Application
+Encoding=UTF-8
+#Icon=email
+Icon=/usr/local/car/icon/remote.png
+Icon[ru]=/usr/local/car/icon/remote.png
+Categories=Utility;
+

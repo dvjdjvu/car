@@ -31,7 +31,7 @@ cp -r --parents bin/car.py $PATH_CAR/
 cp -r --parents bin/src/*.py $PATH_CAR/
 cp -r --parents conf/*.default $PATH_CAR/
 
-cp -r --parents bin/remote.py $PATH_REMOTE/
+cp -r --parents bin/remote.* $PATH_REMOTE/
 cp -r --parents bin/src/*.py $PATH_REMOTE/
 cp -r --parents conf/*.default $PATH_REMOTE/
 cp -r --parents icon/* $PATH_REMOTE/

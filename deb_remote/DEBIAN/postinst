@@ -1,7 +1,15 @@
 #!/bin/bash
 
+chmod u+x /usr/local/car/bin/*
 chmod u+x /usr/share/applications/remote.desktop
-cp /usr/share/applications/remote.desktop /etc/xdg/autostart/
+#cp /usr/share/applications/remote.desktop /etc/xdg/autostart/
+
+if grep "@/usr/local/car/bin/remote.sh" /home/pi/.config/lxsession/LXDE-pi/autostart;
+then
+
+else
+    echo "@/usr/local/car/bin/remote.sh" >> /home/pi/.config/lxsession/LXDE-pi/autostart
+fi
 
 ldconfig
 exit 0

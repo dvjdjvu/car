@@ -6,13 +6,13 @@ class conf :
     
     Type = "server" # "server"/"client"
     
-    #VideoUrl = "http://192.168.2.71:8080/?action=stream"
-    VideoUrl = "http://192.168.2.71:8000/stream.mjpg"
+    VideoServerType = 'm' # 'p'
+    VideoUrl = "http://192.168.2.71:8000/?action=stream"
     
     ServerIP = "192.168.2.71"
     videoServerPort = 8000
     controlServerPort = 8001
-    ServerBufferSize = 100
+    ServerBufferSize = 40
     
     # Video settings
     VideoRate = 24

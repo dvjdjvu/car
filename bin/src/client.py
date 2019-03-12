@@ -245,7 +245,7 @@ class ClientThread(Thread, conf.conf):
 
         self.tcpClient.close() 
     
-class Remote():
+class Remote(conf.conf):
     
     tcpClient = None
     
@@ -253,9 +253,10 @@ class Remote():
         app = QApplication(sys.argv)
         
         player = VideoWindow()
-        player.resize(640, 480)
+        player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
         #player.show()
         player.showFullScreen()
+        player.setCursor(Qt.BlankCursor)
         
         clientThread = ClientThread(player)
         clientThread.start()

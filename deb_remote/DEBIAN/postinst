@@ -9,5 +9,11 @@ then
     echo "@/usr/local/car/bin/remote.sh" >> /home/pi/.config/lxsession/LXDE-pi/autostart
 fi
 
+if ! grep "xserver-command=X -s 0 dpms" /etc/lightdm/lightdm.conf;
+then
+    echo "xserver-command=X -s 0 dpms" >> /etc/lightdm/lightdm.conf
+fi
+
+
 ldconfig
 exit 0

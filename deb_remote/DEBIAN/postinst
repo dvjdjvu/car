@@ -9,9 +9,48 @@ then
     echo "@/usr/local/car/bin/remote.sh" >> /home/pi/.config/lxsession/LXDE-pi/autostart
 fi
 
+if ! grep "[SeatDefaults]" /etc/lightdm/lightdm.conf;
+then
+    echo "[SeatDefaults]" >> /etc/lightdm/lightdm.conf
+fi
+
 if ! grep "xserver-command=X -s 0 dpms" /etc/lightdm/lightdm.conf;
 then
     echo "xserver-command=X -s 0 dpms" >> /etc/lightdm/lightdm.conf
+fi
+
+##
+#  Отключение отключения экрана.
+##
+
+if ! grep "@xset s noblank" /etc/xdg/lxsession/LXDE-pi/autostart;
+then
+    echo "@xset s noblank" >> /etc/xdg/lxsession/LXDE-pi/autostart
+fi
+
+if ! grep "@xset s off" /etc/xdg/lxsession/LXDE-pi/autostart;
+then
+    echo "@xset s off" >> /etc/xdg/lxsession/LXDE-pi/autostart
+fi
+
+if ! grep "@xset -dpms" /etc/xdg/lxsession/LXDE-pi/autostart;
+then
+    echo "@xset -dpms" >> /etc/xdg/lxsession/LXDE-pi/autostart
+fi
+
+if ! grep "@xset s noblank" /etc/xdg/lxsession/LXDE/autostart;
+then
+    echo "@xset s noblank" >> /etc/xdg/lxsession/LXDE/autostart
+fi
+
+if ! grep "@xset s off" /etc/xdg/lxsession/LXDE/autostart;
+then
+    echo "@xset s off" >> /etc/xdg/lxsession/LXDE/autostart
+fi
+
+if ! grep "@xset -dpms" /etc/xdg/lxsession/LXDE/autostart;
+then
+    echo "@xset -dpms" >> /etc/xdg/lxsession/LXDE/autostart
 fi
 
 

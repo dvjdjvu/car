@@ -5,6 +5,7 @@ import os
 from threading import Thread 
 
 import io
+import os
 import picamera
 import logging
 import socketserver
@@ -30,7 +31,7 @@ class StreamerThread(Thread, conf.conf):
         ##
         
         if conf.conf.VideoServerType == 'm' :
-            pass
+            os.system("/home/pi/projects/mjpg-streamer-experimental/start.sh")
         else :
             with picamera.PiCamera(resolution = str(conf.conf.VideoWidth) + 'x' + str(conf.conf.VideoHeight) , framerate = conf.conf.VideoRate) as Camera:
                 output = camera.StreamingOutput()

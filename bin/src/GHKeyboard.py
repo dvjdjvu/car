@@ -65,6 +65,9 @@ class GHK():
             
             print("error", self.tcpClient)
             
+            self.tcpClient.close()
+            self.tcpClient = None
+            
             self.window.labelControlStatus.setText("У")
             self.window.labelControlStatus.show()
     

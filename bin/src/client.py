@@ -240,6 +240,7 @@ class ClientThread(Thread, conf.conf):
                         self.tcpClient.close() 
                         break
                     print(data)
+                    self.window.labelControlStatus.hide()
                 except :
                     break
 

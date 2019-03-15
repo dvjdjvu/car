@@ -198,7 +198,6 @@ class VideoWindow(QMainWindow, conf.conf):
 class ClientThread(Thread, conf.conf):
     
     tcpClient = None
-    
     timerServerRecconect = QtCore.QTimer()
     
     def __init__(self, window): 
@@ -210,20 +209,18 @@ class ClientThread(Thread, conf.conf):
   
     def run(self): 
         
-        connected = False
-        
-        while not connected:
+        while not self.tcpClient:
+            self.tcpClient = None
+            
             try :
                 self.tcpClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.tcpClient.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
-                connected = True
                 self.window.labelControlStatus.hide()
             except socket.error as e:
                 self.window.labelControlStatus.setText("У")
                 self.window.labelControlStatus.show()
                 
                 time.sleep(conf.conf.timeRecconect)
-                connected = False
                 self.tcpClient = None
                 
                 continue
@@ -236,15 +233,21 @@ class ClientThread(Thread, conf.conf):
                         self.window.labelControlStatus.setText("У")
                         self.window.labelControlStatus.show()
                         
-                        connected = False
                         self.tcpClient.close() 
+                        self.tcpClient = None
+                        
                         break
+                    
                     print(data)
+                    
                     self.window.labelControlStatus.hide()
                 except :
+                    self.tcpClient.close() 
+                    self.tcpClient = None
                     break
 
-        self.tcpClient.close() 
+        self.tcpClient.close()
+        self.tcpClient = None
     
 class Remote(conf.conf):
     

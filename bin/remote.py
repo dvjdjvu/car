@@ -29,7 +29,7 @@ if __name__ == "__main__":
     """
     
     # Копирование ярлыка программы на рабочий стол.
-    os.system("cp /usr/share/applications/remote.desktop" + getpass.getuser() + "/Desktop")
+    os.system("cp /usr/share/applications/remote.desktop/ /home/" + getpass.getuser() + "/Desktop")
     
     signal.signal(signal.SIGTERM, proc.shutdown)
     signal.signal(signal.SIGINT,  proc.shutdown)

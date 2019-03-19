@@ -12,10 +12,10 @@ class conf :
     ServerIP = "192.168.2.71"
     videoServerPort = 8000
     controlServerPort = 8001
-    ServerBufferSize = 40
+    ServerBufferSize = 200
     
     # Video settings
-    VideoRate = 24
+    VideoRate = 25
     VideoWidth = 640
     VideoHeight = 480
     

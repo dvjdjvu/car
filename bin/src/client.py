@@ -28,10 +28,11 @@ class VideoWindow(QMainWindow, conf.conf):
 
     textSize = 48
     timerVideoRecconect = QtCore.QTimer()
-    tcpClient = None
     
-    def setTcpClient(self, tcpClient):
-        self.tcpClient = tcpClient
+    clientThread = None
+    
+    def setClientThread(self, clientThread):
+        self.clientThread = clientThread
     
     def __init__(self, parent = None):
         super(VideoWindow, self).__init__(parent)
@@ -79,7 +80,7 @@ class VideoWindow(QMainWindow, conf.conf):
         self.labelControlStatus.show()
         
         
-        self.mediaPlayer.setMedia(QMediaContent(QUrl(conf.conf.VideoUrl)))
+        self.mediaPlayer.setMedia(QMediaContent(QUrl("http://{}:{}/?action=stream".format(conf.conf.ServerIP, conf.conf.videoServerPort))))
         self.mediaPlayer.play()
         
         self.timerVideoRecconect.timeout.connect(self.videoReconnect)
@@ -87,7 +88,7 @@ class VideoWindow(QMainWindow, conf.conf):
     def videoReconnect(self):
         self.timerVideoRecconect.stop()
         
-        self.mediaPlayer.setMedia(QMediaContent(QUrl(conf.conf.VideoUrl)))
+        self.mediaPlayer.setMedia(QMediaContent(QUrl("http://{}:{}/?action=stream".format(conf.conf.ServerIP, conf.conf.videoServerPort))))
         self.mediaPlayer.play()
 
     def resizeEvent(self, e):
@@ -167,8 +168,9 @@ class VideoWindow(QMainWindow, conf.conf):
             
             cmd = '{"type": "remote", "cmd": "' + e.text() + '", "status": "Ok"}'
             
+            if self.clientThread.tcpClient :
             try:
-                self.tcpClient.send(cmd.encode())
+                self.clientThread.tcpClient.send(cmd.encode())
                 self.labelControlStatus.hide()
             except:
                 self.labelControlStatus.setText("У")
@@ -223,7 +225,7 @@ class ClientThread(Thread, conf.conf):
                 time.sleep(conf.conf.timeRecconect)
                 self.tcpClient = None
                 
-                continue
+                continue        
             
             while True:
                 try :
@@ -258,37 +260,28 @@ class Remote(conf.conf):
         
         player = VideoWindow()
         player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
+        
         #player.show()
         player.showFullScreen()
+        
         player.setCursor(Qt.BlankCursor)
         
         clientThread = ClientThread(player)
         clientThread.start()
         
+        '''
         while True :
             self.tcpClient = clientThread.getSocket()
             if self.tcpClient :
                 break;
             else :
                 time.sleep(0.2)
+        '''
         
         keyboard = GHKeyboard.GHK(player)
         
         # Передауем указатель на сокет.
-        player.setTcpClient(self.tcpClient)
-        keyboard.setTcpClient(self.tcpClient)
+        player.setClientThread(clientThread)
+        keyboard.setClientThread(clientThread)
         
         sys.exit(app.exec_())  
-
-if __name__ == '__main__' :
-    app = QApplication(sys.argv)
-    
-    player = VideoWindow()
-    player.resize(640, 480)
-    player.show()
-    #player.showFullScreen()
-    
-    clientThread = ClientThread(player)
-    clientThread.start()
-    
-    sys.exit(app.exec_())

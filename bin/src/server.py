@@ -4,8 +4,11 @@
 
 import sys, time
 import socket
+import json
 from threading import Thread 
 from socketserver import ThreadingMixIn 
+
+import RPi.GPIO as GPIO
 
 import sys
 sys.path.append('../../conf')
@@ -20,6 +23,9 @@ class ServerThread(Thread, conf.conf):
     
     def __init__(self): 
         Thread.__init__(self) 
+        
+    def __del__(self):
+        GPIO.cleanup()
 
     def run(self): 
         TCP_IP = conf.conf.ServerIP
@@ -51,6 +57,12 @@ class ClientThread(Thread, conf.conf):
         self.ip = ip 
         self.port = port 
         print("[+] New server socket thread started for " + ip + ":" + str(port)) 
+        
+        # Инициализация пинов
+        GPIO.setmode(GPIO.BCM)
+        
+        self.Light = 17
+        GPIO.setup(self.Light, GPIO.OUT)
 
     def run(self): 
         while True : 
@@ -66,6 +78,20 @@ class ClientThread(Thread, conf.conf):
             conn.send(answer.encode())
             
             # Дальше здесь будут обрабатываться полученные команды.
+            
+            cmd = json.loads(data)
+            print(cmd)
+            
+            # Свет.
+            if cmd['cmd'] == 'Start':
+                # Включить свет.
+                if cmd['status'] == True :
+                    GPIO.output(self.Light, GPIO.HIGH)
+                # Выключить свет.
+                else : 
+                    GPIO.output(self.Light, GPIO.LOW)
+            
+            
 
     def handler(self):
         pass

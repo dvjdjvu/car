@@ -17,10 +17,10 @@ class GHK():
     Bouncetime = 50
     pins = None
 
-    tcpClient = None
+    clientThread = None
     
-    def setTcpClient(self, tcpClient):
-        self.tcpClient = tcpClient    
+    def setClientThread(self, clientThread):
+        self.clientThread = clientThread
 
     def __init__(self, window):
         self.window = window
@@ -58,18 +58,18 @@ class GHK():
         
         print(cmd)
         
-        if self.tcpClient :
+        if self.clientThread.tcpClient :
             try:
-                self.tcpClient.send(json.dumps(cmd, ensure_ascii=False).encode())
+                self.clientThread.tcpClient.send(json.dumps(cmd, ensure_ascii=False).encode())
                 self.window.labelControlStatus.hide()
                 
                 return
             except:
             
-                print("error", self.tcpClient)
+                print("error", self.clientThread.tcpClient)
             
-                self.tcpClient.close()
-                self.tcpClient = None
+                self.clientThread.tcpClient.close()
+                self.clientThread.tcpClient = None
             
         self.window.labelControlStatus.setText("У")
         self.window.labelControlStatus.show()

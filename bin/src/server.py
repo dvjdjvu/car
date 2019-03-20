@@ -61,8 +61,15 @@ class ClientThread(Thread, conf.conf):
         # Инициализация пинов
         GPIO.setmode(GPIO.BCM)
         
-        self.Light = 17
-        GPIO.setup(self.Light, GPIO.OUT)
+        self.statusLight = False
+        
+        self.gpioLight = 17
+        GPIO.setup(self.gpioLight, GPIO.OUT)
+        GPIO.output(self.gpioLight, GPIO.LOW)
+
+    def __del__(self):
+        GPIO.output(self.gpioLight, GPIO.LOW)
+        GPIO.cleanup()
 
     def run(self): 
         while True : 
@@ -72,25 +79,29 @@ class ClientThread(Thread, conf.conf):
             if data == '' :
                 break
             
-            print(data)
-            
-            answer = '{"type": "car", "cmd": "answer", "status": "Ok"}'
-            conn.send(answer.encode())
-            
             # Дальше здесь будут обрабатываться полученные команды.
             
             cmd = json.loads(data)
             print(cmd)
             
+            answer = {}
+            answer['type'] = 'car'
+            answer['cmd'] = cmd['cmd']            
+            
             # Свет.
             if cmd['cmd'] == 'Start':
-                # Включить свет.
                 if cmd['status'] == True :
-                    GPIO.output(self.Light, GPIO.HIGH)
-                # Выключить свет.
-                else : 
-                    GPIO.output(self.Light, GPIO.LOW)
-            
+                    if self.statusLight == False :
+                        # Включить свет.
+                        GPIO.output(self.gpioLight, GPIO.HIGH)
+                    else :
+                        # Выключить свет.
+                        GPIO.output(self.gpioLight, GPIO.LOW)
+                        
+                    self.statusLight = not self.statusLight
+                    answer['status'] = self.statusLight
+                    
+            conn.send(json.dumps(answer, ensure_ascii=False).encode())
             
 
     def handler(self):

@@ -23,6 +23,7 @@ import conf
 import helper
 
 import GHKeyboard
+import joystick
 
 class VideoWindow(QMainWindow, conf.conf):
 
@@ -261,8 +262,8 @@ class Remote(conf.conf):
         player = VideoWindow()
         player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
         
-        #player.show()
-        player.showFullScreen()
+        player.show()
+        #player.showFullScreen()
         
         player.setCursor(Qt.BlankCursor)
         
@@ -280,8 +281,12 @@ class Remote(conf.conf):
         
         keyboard = GHKeyboard.GHK(player)
         
+        _joystick = joystick.Joystick(player)
+        _joystick.start()
+        
         # Передауем указатель на сокет.
         player.setClientThread(clientThread)
         keyboard.setClientThread(clientThread)
+        _joystick.setClientThread(clientThread)
         
         sys.exit(app.exec_())  

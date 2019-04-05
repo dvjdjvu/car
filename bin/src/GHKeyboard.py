@@ -6,10 +6,12 @@ import time                             # Импортируем класс дл
 import sys, traceback                   # Импортируем библиотеки для обработки исключений
 import os
 
+from threading import Thread 
+
 import json
 import socket
 
-class GHK():
+class GHK(Thread):
     
     #pins = [2, 3, 4, 17, 27, 22, 10, 9, 11, 5, 6, 13, 19, 26, 14, 15, 18, 23, 24, 25, 8, 7, 12, 16, 20, 21]
     pins = [4, 5, 6, 13, 19, 26, 18, 23, 12, 16, 20, 21]
@@ -21,8 +23,14 @@ class GHK():
     
     def setClientThread(self, clientThread):
         self.clientThread = clientThread
-
+    
+    def run(self):
+        while True:
+            time.sleep(5)
+    
     def __init__(self, window):
+        Thread.__init__(self) 
+        
         self.window = window
         
         self.pins = {4 :  {'pin': 'Select', 'status': False, 'callback': self.callbackSelect}, 
@@ -56,7 +64,7 @@ class GHK():
         cmd['cmd'] = pin['pin']
         cmd['status'] = pin['status']
         
-        print(cmd)
+        print('cmd:', cmd)
         
         if self.clientThread.tcpClient :
             try:

@@ -270,16 +270,8 @@ class Remote(conf.conf):
         clientThread = ClientThread(player)
         clientThread.start()
         
-        '''
-        while True :
-            self.tcpClient = clientThread.getSocket()
-            if self.tcpClient :
-                break;
-            else :
-                time.sleep(0.2)
-        '''
-        
         keyboard = GHKeyboard.GHK(player)
+        keyboard.start()
         
         _joystick = joystick.Joystick(player)
         _joystick.start()

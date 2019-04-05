@@ -8,8 +8,12 @@ from threading import Thread
 import Adafruit_ADS1x15
 
 class Joystick(Thread):
-    x = 13435
-    y = 13289
+    x = 0.0
+    y = 0.0
+    xZero = 4.5 
+    yZero = 4.5
+    valueMax = 26500
+    valueStep = 2944
     
     clientThread = None
     
@@ -25,11 +29,21 @@ class Joystick(Thread):
         
     def run(self):
         while True:
-            X = self.adc.read_adc(0, gain=self.GAIN)
-            Y = self.adc.read_adc(1, gain=self.GAIN)
+            X = self.adc.read_adc(0, gain=self.GAIN) / self.valueStep
+            Y = self.adc.read_adc(1, gain=self.GAIN) / self.valueStep
             
-            if (abs(self.x - X) > 500 or abs(self.y - Y) > 500) :
-                print(X, Y)
+            if X > self.xZero :
+                X = X - self.xZero
+            else :
+                X = -1 * (self.xZero - X)
+            
+            if Y > self.yZero :
+                Y = Y - self.yZero
+            else :
+                Y = -1 * (self.yZero - Y)
+            
+            if (abs(self.x - X) >= 0.3 or abs(self.y - Y) >= 0.3) :
+                print(round(X, 1), round(Y, 1))
             
             self.x = X
             self.y = Y

@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QMainWindow, QWidget, QPushButton, QAction
 from PyQt5.QtGui import QPainter, QColor, QFont
 
 import socket
-from threading import Thread 
+from threading import Thread, Lock 
 from socketserver import ThreadingMixIn 
 
 import sys, os
@@ -206,6 +206,7 @@ class ClientThread(Thread, conf.conf):
     def __init__(self, window): 
         Thread.__init__(self) 
         self.window = window
+        self.lock = Lock()
   
     def getSocket(self):
         return self.tcpClient
@@ -251,10 +252,27 @@ class ClientThread(Thread, conf.conf):
 
         self.tcpClient.close()
         self.tcpClient = None
+        
+    def sendCmd(self, cmd):        
+        print(cmd)
+        
+        if self.tcpClient :
+            self.lock.acquire()
+            
+            try:
+                self.tcpClient.send(json.dumps(cmd, ensure_ascii=False).encode())
+                self.window.labelControlStatus.hide()
+            except:
+                print("error", self.tcpClient)
+                self.tcpClient.close()
+                self.tcpClient = None
+                
+                self.window.labelControlStatus.setText("У")
+                self.window.labelControlStatus.show()
+                
+            self.lock.release()
     
 class Remote(conf.conf):
-    
-    tcpClient = None
     
     def start(self):
         app = QApplication(sys.argv)

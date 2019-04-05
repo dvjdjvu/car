@@ -64,24 +64,8 @@ class GHK(Thread):
         cmd['cmd'] = pin['pin']
         cmd['status'] = pin['status']
         
-        print('cmd:', cmd)
+        self.clientThread.sendCmd(cmd)
         
-        if self.clientThread.tcpClient :
-            try:
-                self.clientThread.tcpClient.send(json.dumps(cmd, ensure_ascii=False).encode())
-                self.window.labelControlStatus.hide()
-                
-                return
-            except:
-            
-                print("error", self.clientThread.tcpClient)
-            
-                self.clientThread.tcpClient.close()
-                self.clientThread.tcpClient = None
-            
-        self.window.labelControlStatus.setText("У")
-        self.window.labelControlStatus.show()
-    
     def callbackSelect(self, pin) :
         self.sendCmd(self.pins[pin])
     

@@ -10,7 +10,7 @@ import Adafruit_ADS1x15
 class Joystick(Thread):
     x = 0.0
     y = 0.0
-    xZero = 4.5 
+    xZero = 4.55
     yZero = 4.5
     valueMax = 26500
     valueStep = 2944
@@ -42,11 +42,20 @@ class Joystick(Thread):
             else :
                 Y = -1 * (self.yZero - Y)
             
-            if (abs(self.x - X) >= 0.3 or abs(self.y - Y) >= 0.3) :
-                print(round(X, 1), round(Y, 1))
+            if (abs(self.x - X) >= 0.1 or abs(self.y - Y) >= 0.1) :
+                #print(round(X, 1), round(Y, 1))
+                self.sendCmd(round(X, 1), round(Y, 1))
             
             self.x = X
             self.y = Y
             
-            time.sleep(0.1)
+            time.sleep(0.05)
         
+    def sendCmd(self, x, y):
+        cmd = {}
+        cmd['type'] = 'remote'
+        cmd['cmd'] = 'move'
+        cmd['x'] = x
+        cmd['y'] = y
+        
+        self.clientThread.sendCmd(cmd)

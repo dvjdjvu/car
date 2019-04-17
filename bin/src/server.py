@@ -10,6 +10,7 @@ from socketserver import ThreadingMixIn
 
 import RPi.GPIO as GPIO
 
+import os
 import sys
 sys.path.append('../../conf')
 
@@ -140,18 +141,18 @@ class ClientThread(Thread, conf.conf):
             elif cmd['cmd'] == 'move':
                 speed = cmd['x']
                 
-                if x == 0 :
+                if speed == 0 :
                     GPIO.output(self.L298_IN1, GPIO.LOW)
                     GPIO.output(self.L298_IN2, GPIO.LOW)
-                elif x > 0 :
+                elif speed > 0 :
                     GPIO.output(self.L298_IN2, GPIO.LOW)
                     GPIO.output(self.L298_IN1, GPIO.HIGH)
-                    self.PWMmove.set(x / 4.5)
+                    self.PWMmove.set(speed / 4.5)
                     
                 else :
                     GPIO.output(self.L298_IN1, GPIO.LOW)
                     GPIO.output(self.L298_IN2, GPIO.HIGH)
-                    self.PWMmove.set(x / 4.5)
+                    self.PWMmove.set(speed / 4.5)
             
             conn.send(json.dumps(answer, ensure_ascii=False).encode())
             

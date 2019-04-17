@@ -35,7 +35,7 @@ class ServerThread(Thread, conf.conf):
         Thread.__init__(self) 
         
     def __del__(self):
-        GPIO.cleanup()
+        pass
 
     def run(self): 
         TCP_IP = conf.conf.ServerIP
@@ -68,6 +68,7 @@ class ClientThread(Thread, conf.conf):
         self.port = port 
         print("[+] New server socket thread started for " + ip + ":" + str(port)) 
         
+        GPIO.cleanup() 
         # Инициализация пинов
         GPIO.setmode(GPIO.BCM)
         
@@ -116,6 +117,7 @@ class ClientThread(Thread, conf.conf):
             data = data.replace('}{', '}\n\n{')
             data = data.split('\n\n')
             
+            #for i in reversed(data):
             for i in data:
                 cmd = json.loads(i)
                 print(cmd)
@@ -156,7 +158,7 @@ class ClientThread(Thread, conf.conf):
                     else :
                         GPIO.output(self.L298_IN1, GPIO.LOW)
                         GPIO.output(self.L298_IN2, GPIO.HIGH)
-                        self.PWMmove.set(speed / 4.5)
+                        self.PWMmove.set(-1 * speed / 4.5)
             
                 conn.send(json.dumps(answer, ensure_ascii=False).encode())
             

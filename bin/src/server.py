@@ -111,50 +111,54 @@ class ClientThread(Thread, conf.conf):
             if data == '' :
                 break
             
-            # Дальше здесь будут обрабатываться полученные команды.
+            # Обработка полученных команд.
+            print(data)
+            data = data.replace('}{', '}\n\n{')
+            data = data.split('\n\n')
             
-            cmd = json.loads(data)
-            print(cmd)
+            for i in data:
+                cmd = json.loads(i)
+                print(cmd)
             
-            answer = {}
-            answer['type'] = 'car'
-            answer['cmd'] = cmd['cmd']            
+                answer = {}
+                answer['type'] = 'car'
+                answer['cmd'] = cmd['cmd']            
             
-            # Свет.
-            if cmd['cmd'] == 'Start':
-                if cmd['status'] == True :
-                    if self.statusLight == False :
-                        # Включить свет.
-                        GPIO.output(self.gpioLight, GPIO.HIGH)
-                    else :
-                        # Выключить свет.
-                        GPIO.output(self.gpioLight, GPIO.LOW)
+                # Свет.
+                if cmd['cmd'] == 'Start':
+                    if cmd['status'] == True :
+                        if self.statusLight == False :
+                            # Включить свет.
+                            GPIO.output(self.gpioLight, GPIO.HIGH)
+                        else :
+                            # Выключить свет.
+                            GPIO.output(self.gpioLight, GPIO.LOW)
                         
-                    self.statusLight = not self.statusLight
-                    answer['status'] = self.statusLight
-            # Повысить передачу.
-            elif cmd['cmd'] == 'X':
-                pass
-            # Понизить передачу.
-            elif cmd['cmd'] == 'B':
-                pass
-            elif cmd['cmd'] == 'move':
-                speed = cmd['x']
+                            self.statusLight = not self.statusLight
+                            answer['status'] = self.statusLight
+                # Повысить передачу.
+                elif cmd['cmd'] == 'X':
+                    pass
+                # Понизить передачу.
+                elif cmd['cmd'] == 'B':
+                    pass
+                elif cmd['cmd'] == 'move':
+                    speed = cmd['x']
                 
-                if speed == 0 :
-                    GPIO.output(self.L298_IN1, GPIO.LOW)
-                    GPIO.output(self.L298_IN2, GPIO.LOW)
-                elif speed > 0 :
-                    GPIO.output(self.L298_IN2, GPIO.LOW)
-                    GPIO.output(self.L298_IN1, GPIO.HIGH)
-                    self.PWMmove.set(speed / 4.5)
+                    if speed == 0 :
+                        GPIO.output(self.L298_IN1, GPIO.LOW)
+                        GPIO.output(self.L298_IN2, GPIO.LOW)
+                    elif speed > 0 :
+                        GPIO.output(self.L298_IN2, GPIO.LOW)
+                        GPIO.output(self.L298_IN1, GPIO.HIGH)
+                        self.PWMmove.set(speed / 4.5)
                     
-                else :
-                    GPIO.output(self.L298_IN1, GPIO.LOW)
-                    GPIO.output(self.L298_IN2, GPIO.HIGH)
-                    self.PWMmove.set(speed / 4.5)
+                    else :
+                        GPIO.output(self.L298_IN1, GPIO.LOW)
+                        GPIO.output(self.L298_IN2, GPIO.HIGH)
+                        self.PWMmove.set(speed / 4.5)
             
-            conn.send(json.dumps(answer, ensure_ascii=False).encode())
+                conn.send(json.dumps(answer, ensure_ascii=False).encode())
             
 
     def handler(self):

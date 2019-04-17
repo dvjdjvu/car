@@ -3,11 +3,12 @@
 
 import time
 from threading import Thread 
+from PyQt5.QtCore import QThread, pyqtSignal
 
 # Import the ADS1x15 module.
 import Adafruit_ADS1x15
 
-class Joystick(Thread):
+class Joystick(QThread):
     x = 0.0
     y = 0.0
     xZero = 4.55
@@ -15,15 +16,12 @@ class Joystick(Thread):
     valueMax = 26500
     valueStep = 2944
     
-    clientThread = None
+    signalSendCmd = pyqtSignal(object)
     
-    def setClientThread(self, clientThread):
-        self.clientThread = clientThread    
-    
-    def __init__(self, window):
-        Thread.__init__(self) 
-        
-        self.window = window    
+    def __init__(self, parent = None):
+        #Thread.__init__(self) 
+        QThread.__init__(self, parent) 
+         
         self.adc = Adafruit_ADS1x15.ADS1115()
         self.GAIN = 1
         
@@ -58,4 +56,4 @@ class Joystick(Thread):
         cmd['x'] = x
         cmd['y'] = y
         
-        self.clientThread.sendCmd(cmd)
+        self.signalSendCmd.emit(cmd)

@@ -3,6 +3,7 @@
 
 import os
 from threading import Thread 
+from PyQt5.QtCore import QThread
 
 import io
 import os
@@ -19,10 +20,11 @@ import conf
 import camera
 
 
-class StreamerThread(Thread, conf.conf):
+class StreamerThread(QThread, conf.conf):
     
-    def __init__(self): 
-        Thread.__init__(self)     
+    def __init__(self, parent = None):
+        #Thread.__init__(self) 
+        QThread.__init__(self, parent)    
     
     def run(self):
         

@@ -17,6 +17,15 @@ import conf
 
 conn = None
 
+class PWM:
+    def __init__(self, pin):
+        self.pin = pin
+
+    def set(self, value):
+        cmd = 'echo "%d=%.2f" > /dev/pi-blaster' % (self.pin, value)
+        os.system(cmd)
+
+
 class ServerThread(Thread, conf.conf):
     tcpServer = None
     threads = [] 
@@ -40,7 +49,7 @@ class ServerThread(Thread, conf.conf):
         while True:
             print("Car server up : Waiting for connections from TCP clients...") 
             global conn
-            (conn, (ip,port)) = self.tcpServer.accept() 
+            (conn, (ip, port)) = self.tcpServer.accept() 
             newthread = ClientThread(ip, port) 
             newthread.start() 
             self.threads.append(newthread)         
@@ -49,7 +58,7 @@ class ServerThread(Thread, conf.conf):
         for t in self.threads: 
             t.join() 
 
-
+# Класс отвечает за обработку команд пульта управления.
 class ClientThread(Thread, conf.conf): 
 
     def __init__(self, ip, port): 
@@ -67,8 +76,30 @@ class ClientThread(Thread, conf.conf):
         GPIO.setup(self.gpioLight, GPIO.OUT)
         GPIO.output(self.gpioLight, GPIO.LOW)
 
+        #self.gpioMove = 24
+        #self.PWMmove = PWM(self.gpioMove)
+        
+        # Управление L298
+        self.L298_IN1 = 23
+        self.L298_IN2 = 24
+        self.L298_ENB = 25
+        
+        self.PWMmove = PWM(self.L298_ENB)
+        self.PWMmove.set(0)
+        
+        GPIO.setup(self.L298_IN1, GPIO.OUT)
+        GPIO.output(self.L298_IN1, GPIO.LOW)
+        
+        GPIO.setup(self.L298_IN2, GPIO.OUT)
+        GPIO.output(self.L298_IN2, GPIO.LOW)    
+
     def __del__(self):
         GPIO.output(self.gpioLight, GPIO.LOW)
+        
+        GPIO.output(self.L298_IN1, GPIO.LOW)
+        GPIO.output(self.L298_IN2, GPIO.LOW)
+        self.PWMmove.set(0)
+        
         GPIO.cleanup()
 
     def run(self): 
@@ -100,7 +131,28 @@ class ClientThread(Thread, conf.conf):
                         
                     self.statusLight = not self.statusLight
                     answer['status'] = self.statusLight
+            # Повысить передачу.
+            elif cmd['cmd'] == 'X':
+                pass
+            # Понизить передачу.
+            elif cmd['cmd'] == 'B':
+                pass
+            elif cmd['cmd'] == 'move':
+                speed = cmd['x']
+                
+                if x == 0 :
+                    GPIO.output(self.L298_IN1, GPIO.LOW)
+                    GPIO.output(self.L298_IN2, GPIO.LOW)
+                elif x > 0 :
+                    GPIO.output(self.L298_IN2, GPIO.LOW)
+                    GPIO.output(self.L298_IN1, GPIO.HIGH)
+                    self.PWMmove.set(x / 4.5)
                     
+                else :
+                    GPIO.output(self.L298_IN1, GPIO.LOW)
+                    GPIO.output(self.L298_IN2, GPIO.HIGH)
+                    self.PWMmove.set(x / 4.5)
+            
             conn.send(json.dumps(answer, ensure_ascii=False).encode())
             
 

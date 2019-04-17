@@ -3,7 +3,7 @@
 # PyQt5 Video player
 
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import QDir, Qt, QUrl
+from PyQt5.QtCore import QDir, Qt, QUrl, QThread
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget)
@@ -17,6 +17,7 @@ from socketserver import ThreadingMixIn
 import sys, os
 sys.path.append('../../conf')
 
+import json
 import sys
 import time
 import conf
@@ -29,11 +30,6 @@ class VideoWindow(QMainWindow, conf.conf):
 
     textSize = 48
     timerVideoRecconect = QtCore.QTimer()
-    
-    clientThread = None
-    
-    def setClientThread(self, clientThread):
-        self.clientThread = clientThread
     
     def __init__(self, parent = None):
         super(VideoWindow, self).__init__(parent)
@@ -198,15 +194,16 @@ class VideoWindow(QMainWindow, conf.conf):
             super(VideoWindow, self).keyPressEvent(event)    
     '''
     
-class ClientThread(Thread, conf.conf):
+class ClientThread(QThread, conf.conf):
     
     tcpClient = None
     timerServerRecconect = QtCore.QTimer()
+    mutex = QtCore.QMutex()
     
-    def __init__(self, window): 
-        Thread.__init__(self) 
+    def __init__(self, window, parent = None): 
+        #Thread.__init__(self) 
+        QThread.__init__(self, parent) 
         self.window = window
-        self.lock = Lock()
   
     def getSocket(self):
         return self.tcpClient
@@ -229,6 +226,8 @@ class ClientThread(Thread, conf.conf):
                 
                 continue        
             
+            print('Ok self.tcpClient', self.tcpClient)
+            
             while True:
                 try :
                     data = self.tcpClient.recv(conf.conf.ServerBufferSize)
@@ -249,6 +248,8 @@ class ClientThread(Thread, conf.conf):
                     self.tcpClient.close() 
                     self.tcpClient = None
                     break
+                
+            print('Fail self.tcpClient', self.tcpClient)
 
         self.tcpClient.close()
         self.tcpClient = None
@@ -257,7 +258,7 @@ class ClientThread(Thread, conf.conf):
         print(cmd)
         
         if self.tcpClient :
-            self.lock.acquire()
+            self.mutex.lock()
             
             try:
                 self.tcpClient.send(json.dumps(cmd, ensure_ascii=False).encode())
@@ -269,8 +270,10 @@ class ClientThread(Thread, conf.conf):
                 
                 self.window.labelControlStatus.setText("У")
                 self.window.labelControlStatus.show()
-                
-            self.lock.release()
+
+            self.mutex.unlock()
+        else :
+            print("self.tcpClient", self.tcpClient)
     
 class Remote(conf.conf):
     
@@ -288,15 +291,14 @@ class Remote(conf.conf):
         clientThread = ClientThread(player)
         clientThread.start()
         
-        keyboard = GHKeyboard.GHK(player)
+        keyboard = GHKeyboard.GHK()
         keyboard.start()
         
-        _joystick = joystick.Joystick(player)
+        _joystick = joystick.Joystick()
         _joystick.start()
         
-        # Передауем указатель на сокет.
-        player.setClientThread(clientThread)
-        keyboard.setClientThread(clientThread)
-        _joystick.setClientThread(clientThread)
+        keyboard.signalSendCmd.connect(clientThread.sendCmd)
+        _joystick.signalSendCmd.connect(clientThread.sendCmd)
         
         sys.exit(app.exec_())  
+

@@ -33,7 +33,13 @@ class StreamerThread(QThread, conf.conf):
         ##
         
         if conf.conf.VideoServerType == 'm' :
-            os.system("/home/pi/projects/mjpg-streamer-experimental/start.sh")
+            #os.system("/home/pi/projects/mjpg-streamer-experimental/start.sh")
+            cmd = "cd /home/pi/projects/mjpg-streamer-experimental && "
+            cmd += './mjpg_streamer -o "./output_http.so -p {0} -w ./www" -i "./input_raspicam.so -x {1} -y {2} -fps 25 -ex auto -awb auto -vs -ISO 10"'.format(conf.conf.videoServerPort, conf.conf.VideoWidth, conf.conf.VideoHeight)
+            
+            print(cmd)
+            os.system(cmd)
+            
         else :
             with picamera.PiCamera(resolution = str(conf.conf.VideoWidth) + 'x' + str(conf.conf.VideoHeight) , framerate = conf.conf.VideoRate) as Camera:
                 output = camera.StreamingOutput()

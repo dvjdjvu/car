@@ -39,7 +39,7 @@ def ProcessingInit(conf):
     streamerThread.start()
         
     serverThread.wait()
-    streamerThread.join()
+    streamerThread.wait()
         
 
 def ProcessingWatchdog(): 

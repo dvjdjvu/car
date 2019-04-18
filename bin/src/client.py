@@ -65,17 +65,13 @@ class VideoWindow(QMainWindow, conf.conf):
         self.labelVideoStatus.setGeometry(0, 0, self.textSize, self.textSize)
         #self.labelVideoStatus.setAttribute(Qt.WA_TranslucentBackground)
         self.labelVideoStatus.raise_()
-        self.labelVideoStatus.setText("В");
-        self.labelVideoStatus.show()
-        
+        self.displayPrint("В-")
         
         self.labelControlStatus = QLabel(self.videoWidget)
         self.labelControlStatus.setGeometry(0, 0, self.textSize, self.textSize)
         self.labelControlStatus.setStyleSheet("QLabel { background-color : black; color : red; font-size:" + str(self.textSize) + "px}")
         self.labelControlStatus.raise_()
-        self.labelControlStatus.setText("У")
-        self.labelControlStatus.show()
-        
+        self.displayPrint("У")
         
         self.mediaPlayer.setMedia(QMediaContent(QUrl("http://{}:{}/?action=stream".format(conf.conf.ServerIP, conf.conf.videoServerPort))))
         self.mediaPlayer.play()
@@ -120,14 +116,10 @@ class VideoWindow(QMainWindow, conf.conf):
         elif status == QMediaPlayer.BufferedMedia :
             pass
         elif status == QMediaPlayer.EndOfMedia :
-            self.labelVideoStatus.setText("В");
-            self.labelVideoStatus.show()
-            
+            self.displayPrint("В-")
             self.timerVideoRecconect.start(conf.conf.timeRecconect * 1000)
         elif status == QMediaPlayer.InvalidMedia :
-            self.labelVideoStatus.setText("В");
-            self.labelVideoStatus.show()
-            
+            self.displayPrint("В-")
             self.timerVideoRecconect.start(conf.conf.timeRecconect * 1000)
 
     def positionChanged(self, position):
@@ -152,6 +144,19 @@ class VideoWindow(QMainWindow, conf.conf):
             error = int(self.mediaPlayer.error())
             #message += F' self.mediaPlayer.currentMedia().canonicalUrl()'
             message += 'self.mediaPlayer.currentMedia().canonicalUrl()'
+
+    def displayPrint(self, _str) :
+        
+        if _str == 'У-' :
+            self.labelControlStatus.setText("У-")
+            self.labelControlStatus.show()
+        elif _str == 'У+' :
+            self.labelControlStatus.hide()
+        elif _str == 'В-' :
+            self.labelVideoStatus.setText("В-");
+            self.labelVideoStatus.show()
+        elif _str == 'В+' :
+            self.labelControlStatus.hide()
 
     def event(self, e):
         if e.type() == QtCore.QEvent.KeyPress:
@@ -200,10 +205,10 @@ class ClientThread(QThread, conf.conf):
     timerServerRecconect = QtCore.QTimer()
     mutex = QtCore.QMutex()
     
-    def __init__(self, window, parent = None): 
-        #Thread.__init__(self) 
+    signalDisplayPrint = pyqtSignal(str)
+    
+    def __init__(self, parent = None): 
         QThread.__init__(self, parent) 
-        self.window = window
   
     def getSocket(self):
         return self.tcpClient
@@ -216,10 +221,9 @@ class ClientThread(QThread, conf.conf):
             try :
                 self.tcpClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.tcpClient.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
-                self.window.labelControlStatus.hide()
+                self.signalDisplayPrint.emit("У+")
             except socket.error as e:
-                self.window.labelControlStatus.setText("У")
-                self.window.labelControlStatus.show()
+                self.signalDisplayPrint.emit("У-")
                 
                 time.sleep(conf.conf.timeRecconect)
                 self.tcpClient = None
@@ -233,9 +237,7 @@ class ClientThread(QThread, conf.conf):
                     data = self.tcpClient.recv(conf.conf.ServerBufferSize)
                     data = data.decode()
                     if data == '' :
-                        self.window.labelControlStatus.setText("У")
-                        self.window.labelControlStatus.show()
-                        
+                        self.signalDisplayPrint.emit("У-")
                         self.tcpClient.close() 
                         self.tcpClient = None
                         
@@ -243,7 +245,7 @@ class ClientThread(QThread, conf.conf):
                     
                     print(data)
                     
-                    self.window.labelControlStatus.hide()
+                    self.signalDisplayPrint.emit("У+")
                 except :
                     self.tcpClient.close() 
                     self.tcpClient = None
@@ -262,14 +264,13 @@ class ClientThread(QThread, conf.conf):
             
             try:
                 self.tcpClient.send(json.dumps(cmd, ensure_ascii=False).encode())
-                self.window.labelControlStatus.hide()
+                self.signalDisplayPrint.emit("У+")
             except:
                 print("error", self.tcpClient)
                 self.tcpClient.close()
                 self.tcpClient = None
                 
-                self.window.labelControlStatus.setText("У")
-                self.window.labelControlStatus.show()
+                self.signalDisplayPrint.emit("У-")
 
             self.mutex.unlock()
         else :
@@ -288,7 +289,7 @@ class Remote(conf.conf):
         
         player.setCursor(Qt.BlankCursor)
         
-        clientThread = ClientThread(player)
+        clientThread = ClientThread()
         clientThread.start()
         
         keyboard = GHKeyboard.GHK()
@@ -297,8 +298,11 @@ class Remote(conf.conf):
         _joystick = joystick.Joystick()
         _joystick.start()
         
+        clientThread.signalDisplayPrint.connect(player.displayPrint)
         keyboard.signalSendCmd.connect(clientThread.sendCmd)
         _joystick.signalSendCmd.connect(clientThread.sendCmd)
+        
+        self.signalDisplayPrint.emit
         
         sys.exit(app.exec_())  
 

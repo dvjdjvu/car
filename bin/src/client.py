@@ -3,12 +3,13 @@
 # PyQt5 Video player
 
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import QDir, Qt, QUrl, QThread
+from PyQt5.QtCore import QDir, Qt, QUrl
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel, QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget)
 from PyQt5.QtWidgets import QMainWindow, QWidget, QPushButton, QAction
 from PyQt5.QtGui import QPainter, QColor, QFont
+from PyQt5.QtCore import QThread, pyqtSignal
 
 import socket
 from threading import Thread, Lock 
@@ -71,7 +72,7 @@ class VideoWindow(QMainWindow, conf.conf):
         self.labelControlStatus.setGeometry(0, 0, self.textSize, self.textSize)
         self.labelControlStatus.setStyleSheet("QLabel { background-color : black; color : red; font-size:" + str(self.textSize) + "px}")
         self.labelControlStatus.raise_()
-        self.displayPrint("У")
+        self.displayPrint("У-")
         
         self.mediaPlayer.setMedia(QMediaContent(QUrl("http://{}:{}/?action=stream".format(conf.conf.ServerIP, conf.conf.videoServerPort))))
         self.mediaPlayer.play()
@@ -146,14 +147,15 @@ class VideoWindow(QMainWindow, conf.conf):
             message += 'self.mediaPlayer.currentMedia().canonicalUrl()'
 
     def displayPrint(self, _str) :
+        print(_str)
         
         if _str == 'У-' :
-            self.labelControlStatus.setText("У-")
+            self.labelControlStatus.setText("У")
             self.labelControlStatus.show()
         elif _str == 'У+' :
             self.labelControlStatus.hide()
         elif _str == 'В-' :
-            self.labelVideoStatus.setText("В-");
+            self.labelVideoStatus.setText("В");
             self.labelVideoStatus.show()
         elif _str == 'В+' :
             self.labelControlStatus.hide()
@@ -290,19 +292,17 @@ class Remote(conf.conf):
         player.setCursor(Qt.BlankCursor)
         
         clientThread = ClientThread()
-        clientThread.start()
-        
         keyboard = GHKeyboard.GHK()
-        keyboard.start()
-        
         _joystick = joystick.Joystick()
-        _joystick.start()
+        
         
         clientThread.signalDisplayPrint.connect(player.displayPrint)
         keyboard.signalSendCmd.connect(clientThread.sendCmd)
         _joystick.signalSendCmd.connect(clientThread.sendCmd)
         
-        self.signalDisplayPrint.emit
+        clientThread.start()
+        keyboard.start()
+        _joystick.start()
         
         sys.exit(app.exec_())  
 

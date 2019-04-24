@@ -3,7 +3,7 @@
 # Server is stay in GAZ-66.
 
 import time
-#import wiringpi
+import wiringpi
 
 import sys, time
 import socket
@@ -65,10 +65,10 @@ class ServerThread(Thread, conf.conf):
 # Класс отвечает за обработку команд пульта управления.
 class ClientThread(Thread, conf.conf):    
 
-    turnCenter = 7.5
-    turnLeft   = 12.5
-    turnRight  = 2.5
-    turnDelta  = 5
+    turnCenter = 150
+    turnLeft   = 190
+    turnRight  = 110
+    turnDelta  = 40
 
     def __init__(self, ip, port): 
         Thread.__init__(self) 
@@ -86,35 +86,24 @@ class ClientThread(Thread, conf.conf):
         GPIO.setup(self.gpioLight, GPIO.OUT)
         GPIO.output(self.gpioLight, GPIO.LOW)
         
-        # Управление L298
+        # Управление L298, мотор движения машинки.
         self.L298_IN1 = 23
         self.L298_IN2 = 24
         self.L298_ENB = 25
         
-        ##self.PWMmove = PWM(self.L298_ENB)
-        ##self.PWMmove.set(0)
-        
-        GPIO.setup(self.L298_ENB, GPIO.OUT)
-        self.PWMmove = GPIO.PWM(self.L298_ENB, 50)
-        self.PWMmove.start(0)
-        
         # Управление сервоприводом поворота колес
         self.SERVO = 18
         
-        GPIO.setup(self.SERVO, GPIO.OUT)
-        self.PWMservo = GPIO.PWM(self.SERVO, 50)
-        self.PWMservo.start(self.turnCenter)        
+        wiringpi.wiringPiSetupGpio()
+        wiringpi.pinMode(self.L298_ENB, wiringpi.GPIO.PWM_OUTPUT)
+        wiringpi.pinMode(self.SERVO, wiringpi.GPIO.PWM_OUTPUT)
         
-        # use 'GPIO naming'
-        ##wiringpi.wiringPiSetupGpio()        
-        # set #18 to be a PWM output
-        ##wiringpi.pinMode(self.SERVO, wiringpi.GPIO.PWM_OUTPUT)
-        # set the PWM mode to milliseconds stype
-        ##wiringpi.pwmSetMode(wiringpi.GPIO.PWM_MODE_MS)
-        
-        # divide down clock
-        ##wiringpi.pwmSetClock(192)
-        ##wiringpi.pwmSetRange(2000)      
+        wiringpi.softPwmCreate(self.L298_ENB, 0, 200)
+        wiringpi.pwmSetMode(wiringpi.GPIO.PWM_MODE_MS)
+
+        wiringpi.pwmSetClock(192)
+        wiringpi.pwmSetRange(2000)          
+            
         
         GPIO.setup(self.L298_IN1, GPIO.OUT)
         GPIO.output(self.L298_IN1, GPIO.LOW)
@@ -183,29 +172,20 @@ class ClientThread(Thread, conf.conf):
                     elif speed > 0 :
                         GPIO.output(self.L298_IN2, GPIO.LOW)
                         GPIO.output(self.L298_IN1, GPIO.HIGH)
-                        ##self.PWMmove.set(speed / 4.5)
-                        self.PWMmove.ChangeDutyCycle(100 * speed / 4.5)
+                        wiringpi.softPwmWrite(self.L298_ENB, int(100 * speed / 4.5))
                     
                     elif speed < 0 :
                         GPIO.output(self.L298_IN1, GPIO.LOW)
                         GPIO.output(self.L298_IN2, GPIO.HIGH)
-                        ##self.PWMmove.set(-1 * speed / 4.5)
-                        self.PWMmove.ChangeDutyCycle(-100 * speed / 4.5)
+                        wiringpi.softPwmWrite(self.L298_ENB, int(-100 * speed / 4.5))
                         
                     turn = cmd['y']
-                    #turn = turn * -1
                     if turn == 0 :
-                        ##wiringpi.pwmWrite(self.SERVO, int(self.turnCenter))
-                        self.PWMservo.ChangeDutyCycle(7.5)
-                        pass
+                        wiringpi.pwmWrite(self.SERVO, int(self.turnCenter))
                     elif turn > 0 : # Право
-                        self.PWMservo.ChangeDutyCycle(12.5)
-                        ##wiringpi.pwmWrite(self.SERVO, int(self.turnCenter + (turn * self.turnDelta / 4.5)))
-                        pass
+                        wiringpi.pwmWrite(self.SERVO, int(self.turnCenter + (-1 * turn * self.turnDelta / 4.5)))
                     elif turn < 0 : # Лево
-                        self.PWMservo.ChangeDutyCycle(2.5)
-                        ##wiringpi.pwmWrite(self.SERVO, int(self.turnCenter + (turn * self.turnDelta / 4.5)))
-                        pass
+                        wiringpi.pwmWrite(self.SERVO, int(self.turnCenter + (-1 * turn * self.turnDelta / 4.5)))
                                               
 
                 conn.send(json.dumps(answer, ensure_ascii=False).encode())

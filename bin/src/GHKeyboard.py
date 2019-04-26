@@ -17,7 +17,7 @@ class GHK(QThread):
     #pins = [2, 3, 4, 17, 27, 22, 10, 9, 11, 5, 6, 13, 19, 26, 14, 15, 18, 23, 24, 25, 8, 7, 12, 16, 20, 21]
     pins = [4, 5, 6, 13, 19, 26, 18, 23, 12, 16, 20, 21]
     
-    Bouncetime = 50
+    Bouncetime = 100
     pins = None
 
     signalSendCmd = pyqtSignal(object)
@@ -51,10 +51,15 @@ class GHK(QThread):
             p = self.pins[pin]
             
             GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)        
-            GPIO.add_event_detect(pin, GPIO.BOTH, callback=p['callback'], bouncetime=self.Bouncetime)
+            GPIO.add_event_detect(pin, GPIO.BOTH, callback=p['callback'])#, bouncetime=self.Bouncetime)
     
-    def sendCmd(self, pin):
-        pin['status'] = not pin['status']
+    def sendCmd(self, p, pin):
+        
+        pin['status'] = GPIO.input(p)
+        if pin['status'] == 1 :
+            pin['status'] = False
+        else :
+            pin['status'] = True
         
         cmd = {}
         cmd['type'] = 'remote'
@@ -64,38 +69,38 @@ class GHK(QThread):
         self.signalSendCmd.emit(cmd)
         
     def callbackSelect(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackUp(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackDown(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackLeft(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackRight(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackA(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackTR(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackTL(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackB(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackX(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackY(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackStart(self, pin) :
-        self.sendCmd(self.pins[pin])
+        self.sendCmd(pin, self.pins[pin])
    

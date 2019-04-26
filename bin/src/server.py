@@ -65,10 +65,16 @@ class ServerThread(Thread, conf.conf):
 # Класс отвечает за обработку команд пульта управления.
 class ClientThread(Thread, conf.conf):    
 
-    turnCenter = 150
-    turnLeft   = 190
-    turnRight  = 110
-    turnDelta  = 40
+    # Максимальные углы поворота колес.
+    _turnCenter = 150
+    _turnLeft   = 190
+    _turnRight  = 110
+    _turnDelta  = 40
+    
+    #Максимальные скоростные значения.
+    _moveForward = 4.5
+    _moveBack = -4.5
+    
 
     def __init__(self, ip, port): 
         Thread.__init__(self) 
@@ -83,6 +89,7 @@ class ClientThread(Thread, conf.conf):
         self.statusLight = False
         
         self.gpioLight = 17
+        #wiringpi.pinMode(self.gpioLight, wiringpi.GPIO.PWM_OUTPUT)
         GPIO.setup(self.gpioLight, GPIO.OUT)
         GPIO.output(self.gpioLight, GPIO.LOW)
         
@@ -114,11 +121,33 @@ class ClientThread(Thread, conf.conf):
     def __del__(self):
         GPIO.output(self.gpioLight, GPIO.LOW)
         
-        GPIO.output(self.L298_IN1, GPIO.LOW)
-        GPIO.output(self.L298_IN2, GPIO.LOW)
-        self.PWMmove.set(0)
+        self.moveStop()
+        self.turnCenter()
         
         GPIO.cleanup()
+
+    def moveStop(self):
+        GPIO.output(self.L298_IN1, GPIO.LOW)
+        GPIO.output(self.L298_IN2, GPIO.LOW)
+        
+    def moveForward(self, speed):
+        GPIO.output(self.L298_IN2, GPIO.LOW)
+        GPIO.output(self.L298_IN1, GPIO.HIGH)    
+        wiringpi.softPwmWrite(self.L298_ENB, int(100 * speed / 4.5))
+        
+    def moveBack(self, speed):
+        GPIO.output(self.L298_IN1, GPIO.LOW)
+        GPIO.output(self.L298_IN2, GPIO.HIGH)
+        wiringpi.softPwmWrite(self.L298_ENB, int(-100 * speed / 4.5))
+        
+    def turnCenter(self):
+        wiringpi.pwmWrite(self.SERVO, int(self._turnCenter))
+        
+    def turnLeft(self, turn):
+        wiringpi.pwmWrite(self.SERVO, int(self._turnCenter + (-1 * turn * self._turnDelta / 4.5)))
+        
+    def turnRight(self, turn):
+        wiringpi.pwmWrite(self.SERVO, int(self._turnCenter + (-1 * turn * self._turnDelta / 4.5)))
 
     def run(self): 
         while True : 
@@ -148,6 +177,7 @@ class ClientThread(Thread, conf.conf):
             
                 # Свет.
                 if cmd['cmd'] == 'Start':
+                    print(cmd)
                     if cmd['status'] == True :
                         if self.statusLight == False :
                             # Включить свет.
@@ -156,40 +186,42 @@ class ClientThread(Thread, conf.conf):
                             # Выключить свет.
                             GPIO.output(self.gpioLight, GPIO.LOW)
                         
-                            self.statusLight = not self.statusLight
-                            answer['status'] = self.statusLight
-                # Повысить передачу.
+                        self.statusLight = not self.statusLight
+                        answer['status'] = self.statusLight
+                # Движение вперед.
                 elif cmd['cmd'] == 'X':
-                    pass
-                # Понизить передачу.
+                    print(cmd)
+                    if cmd['status'] == True :
+                        self.moveForward(self._moveForward)
+                    else :
+                        self.moveStop()
+                # Движение назад.
                 elif cmd['cmd'] == 'B':
-                    pass
+                    print(cmd)
+                    if cmd['status'] == True :
+                        self.moveBack(self._moveBack)
+                    else :
+                        self.moveStop()                    
                 elif cmd['cmd'] == 'move':
+                    '''
                     speed = cmd['x']
                     if speed == 0 :
-                        GPIO.output(self.L298_IN1, GPIO.LOW)
-                        GPIO.output(self.L298_IN2, GPIO.LOW)
+                        self.moveStop()
                     elif speed > 0 :
-                        GPIO.output(self.L298_IN2, GPIO.LOW)
-                        GPIO.output(self.L298_IN1, GPIO.HIGH)
-                        wiringpi.softPwmWrite(self.L298_ENB, int(100 * speed / 4.5))
-                    
+                        self.moveForward(self, speed)
                     elif speed < 0 :
-                        GPIO.output(self.L298_IN1, GPIO.LOW)
-                        GPIO.output(self.L298_IN2, GPIO.HIGH)
-                        wiringpi.softPwmWrite(self.L298_ENB, int(-100 * speed / 4.5))
-                        
+                        self.moveBack(self, -speed)
+                    ''' 
+                    
                     turn = cmd['y']
                     if turn == 0 :
-                        wiringpi.pwmWrite(self.SERVO, int(self.turnCenter))
+                        self.turnCenter()
                     elif turn > 0 : # Право
-                        wiringpi.pwmWrite(self.SERVO, int(self.turnCenter + (-1 * turn * self.turnDelta / 4.5)))
+                        self.turnRight(turn)
                     elif turn < 0 : # Лево
-                        wiringpi.pwmWrite(self.SERVO, int(self.turnCenter + (-1 * turn * self.turnDelta / 4.5)))
+                        self.turnLeft(turn)
                                               
-
                 conn.send(json.dumps(answer, ensure_ascii=False).encode())
-            
 
     def handler(self):
         pass

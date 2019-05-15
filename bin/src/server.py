@@ -18,8 +18,7 @@ import sys
 sys.path.append('../../conf')
 
 import conf
-
-conn = None
+from HardwareSetting import HardwareSetting 
 
 class PWM:
     def __init__(self, pin):
@@ -27,8 +26,18 @@ class PWM:
 
     def set(self, value):
         cmd = 'echo "%d=%.2f" > /dev/pi-blaster' % (self.pin, value)
-        os.system(cmd)
+        os.system(cmd) 
 
+class CarStatus:
+    def __init__(self):
+        self.status = {}
+        
+        self.status['light'] = False
+        self.status['move'] = 'stop'
+        self.status['turn'] = 'center'
+    
+    def __del__(self):
+        return
 
 class ServerThread(Thread, conf.conf):
     tcpServer = None
@@ -49,12 +58,12 @@ class ServerThread(Thread, conf.conf):
         self.tcpServer.bind((TCP_IP, TCP_PORT)) 
         threads = [] 
 
-        self.tcpServer.listen(4)
+        # Максимальное колличество подключений в очереди.
+        self.tcpServer.listen(1)
         while True:
             print("Car server up : Waiting for connections from TCP clients...") 
-            global conn
             (conn, (ip, port)) = self.tcpServer.accept() 
-            newthread = ClientThread(ip, port) 
+            newthread = ClientThread(conn, ip, port) 
             newthread.start() 
             self.threads.append(newthread)         
 
@@ -63,21 +72,11 @@ class ServerThread(Thread, conf.conf):
             t.join() 
 
 # Класс отвечает за обработку команд пульта управления.
-class ClientThread(Thread, conf.conf):    
-
-    # Максимальные углы поворота колес.
-    _turnCenter = 150
-    _turnLeft   = 190
-    _turnRight  = 110
-    _turnDelta  = 40
+class ClientThread(Thread, conf.conf, HardwareSetting):    
     
-    #Максимальные скоростные значения.
-    _moveForward = 4.5
-    _moveBack = -4.5
-    
-
-    def __init__(self, ip, port): 
+    def __init__(self, conn, ip, port): 
         Thread.__init__(self) 
+        self.conn = conn
         self.ip = ip 
         self.port = port 
         print("[+] New server socket thread started for " + ip + ":" + str(port))      
@@ -133,26 +132,25 @@ class ClientThread(Thread, conf.conf):
     def moveForward(self, speed):
         GPIO.output(self.L298_IN2, GPIO.LOW)
         GPIO.output(self.L298_IN1, GPIO.HIGH)    
-        wiringpi.softPwmWrite(self.L298_ENB, int(100 * speed / 4.5))
+        wiringpi.softPwmWrite(self.L298_ENB, int(100 * speed / HardwareSetting._moveForward))
         
     def moveBack(self, speed):
         GPIO.output(self.L298_IN1, GPIO.LOW)
         GPIO.output(self.L298_IN2, GPIO.HIGH)
-        wiringpi.softPwmWrite(self.L298_ENB, int(-100 * speed / 4.5))
+        wiringpi.softPwmWrite(self.L298_ENB, int(100 * speed / HardwareSetting._moveBack))
         
     def turnCenter(self):
-        wiringpi.pwmWrite(self.SERVO, int(self._turnCenter))
+        wiringpi.pwmWrite(self.SERVO, int(HardwareSetting._turnCenter))
         
     def turnLeft(self, turn):
-        wiringpi.pwmWrite(self.SERVO, int(self._turnCenter + (-1 * turn * self._turnDelta / 4.5)))
+        wiringpi.pwmWrite(self.SERVO, int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero)))
         
     def turnRight(self, turn):
-        wiringpi.pwmWrite(self.SERVO, int(self._turnCenter + (-1 * turn * self._turnDelta / 4.5)))
+        wiringpi.pwmWrite(self.SERVO, int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero)))
 
     def run(self): 
         while True : 
-            global conn
-            data = conn.recv(2048)
+            data = self.conn.recv(2048)
             data = data.decode()
             if data == '' :
                 break
@@ -192,14 +190,14 @@ class ClientThread(Thread, conf.conf):
                 elif cmd['cmd'] == 'X':
                     print(cmd)
                     if cmd['status'] == True :
-                        self.moveForward(self._moveForward)
+                        self.moveForward(HardwareSetting._moveForward)
                     else :
                         self.moveStop()
                 # Движение назад.
                 elif cmd['cmd'] == 'B':
                     print(cmd)
                     if cmd['status'] == True :
-                        self.moveBack(self._moveBack)
+                        self.moveBack(HardwareSetting._moveBack)
                     else :
                         self.moveStop()                    
                 elif cmd['cmd'] == 'move':
@@ -221,7 +219,7 @@ class ClientThread(Thread, conf.conf):
                     elif turn < 0 : # Лево
                         self.turnLeft(turn)
                                               
-                conn.send(json.dumps(answer, ensure_ascii=False).encode())
+                self.conn.send(json.dumps(answer, ensure_ascii=False).encode())
 
     def handler(self):
         pass

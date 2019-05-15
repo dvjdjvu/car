@@ -8,13 +8,11 @@ from PyQt5.QtCore import QThread, pyqtSignal
 # Import the ADS1x15 module.
 import Adafruit_ADS1x15
 
-class Joystick(QThread):
+from HardwareSetting import HardwareSetting 
+
+class Joystick(QThread, HardwareSetting):
     x = 0.0
     y = 0.0
-    xZero = 4.55
-    yZero = 4.5
-    valueMax = 26500
-    valueStep = 2944
     
     signalSendCmd = pyqtSignal(object)
     
@@ -27,18 +25,18 @@ class Joystick(QThread):
         
     def run(self):
         while True:
-            X = self.adc.read_adc(0, gain=self.GAIN) / self.valueStep
-            Y = self.adc.read_adc(1, gain=self.GAIN) / self.valueStep
+            X = self.adc.read_adc(0, gain=self.GAIN) / HardwareSetting.valueStep
+            Y = self.adc.read_adc(1, gain=self.GAIN) / HardwareSetting.valueStep
             
-            if X > self.xZero :
-                X = X - self.xZero
+            if X > HardwareSetting.xZero :
+                X = X - HardwareSetting.xZero
             else :
-                X = -1 * (self.xZero - X)
+                X = -1 * (HardwareSetting.xZero - X)
             
-            if Y > self.yZero :
-                Y = Y - self.yZero
+            if Y > HardwareSetting.yZero :
+                Y = Y - HardwareSetting.yZero
             else :
-                Y = -1 * (self.yZero - Y)
+                Y = -1 * (HardwareSetting.yZero - Y)
             
             if (abs(self.x - X) >= 0.05 or abs(self.y - Y) >= 0.05) :
                 #print(round(X, 1), round(Y, 1))

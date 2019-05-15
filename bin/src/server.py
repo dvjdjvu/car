@@ -33,8 +33,8 @@ class CarStatus:
         self.status = {}
         
         self.status['light'] = False
-        self.status['move'] = 'stop'
-        self.status['turn'] = 'center'
+        self.status['move'] = 0
+        self.status['turn'] = 0
     
     def __del__(self):
         return
@@ -80,6 +80,9 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         self.ip = ip 
         self.port = port 
         print("[+] New server socket thread started for " + ip + ":" + str(port))      
+        
+        # Класс состояния машинки.
+        self.CarStatus = CarStatus()
         
         GPIO.cleanup() 
         # Инициализация пинов
@@ -129,24 +132,38 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         GPIO.output(self.L298_IN1, GPIO.LOW)
         GPIO.output(self.L298_IN2, GPIO.LOW)
         
+        self.CarStatus.status['move'] = 0
+        
     def moveForward(self, speed):
         GPIO.output(self.L298_IN2, GPIO.LOW)
-        GPIO.output(self.L298_IN1, GPIO.HIGH)    
-        wiringpi.softPwmWrite(self.L298_ENB, int(100 * speed / HardwareSetting._moveForward))
+        GPIO.output(self.L298_IN1, GPIO.HIGH)
+        
+        val = int(100 * speed / HardwareSetting._moveForward)
+        wiringpi.softPwmWrite(self.L298_ENB, val)
+        self.CarStatus.status['move'] = val
         
     def moveBack(self, speed):
         GPIO.output(self.L298_IN1, GPIO.LOW)
         GPIO.output(self.L298_IN2, GPIO.HIGH)
-        wiringpi.softPwmWrite(self.L298_ENB, int(100 * speed / HardwareSetting._moveBack))
+        
+        val = int(100 * speed / HardwareSetting._moveBack)
+        wiringpi.softPwmWrite(self.L298_ENB, val)
+        self.CarStatus.status['move'] = val
         
     def turnCenter(self):
-        wiringpi.pwmWrite(self.SERVO, int(HardwareSetting._turnCenter))
+        val = int(HardwareSetting._turnCenter)
+        wiringpi.pwmWrite(self.SERVO, val)
+        self.CarStatus.status['turn'] = val
         
     def turnLeft(self, turn):
-        wiringpi.pwmWrite(self.SERVO, int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero)))
+        val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
+        wiringpi.pwmWrite(self.SERVO, val)
+        self.CarStatus.status['turn'] = val
         
     def turnRight(self, turn):
-        wiringpi.pwmWrite(self.SERVO, int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero)))
+        val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
+        wiringpi.pwmWrite(self.SERVO, val)
+        self.CarStatus.status['turn'] = val
 
     def run(self): 
         while True : 
@@ -185,6 +202,8 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                             GPIO.output(self.gpioLight, GPIO.LOW)
                         
                         self.statusLight = not self.statusLight
+                        
+                        self.CarStatus.status['light'] = self.statusLight
                         answer['status'] = self.statusLight
                 # Движение вперед.
                 elif cmd['cmd'] == 'X':

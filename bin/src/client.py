@@ -147,7 +147,7 @@ class VideoWindow(QMainWindow, conf.conf):
             message += 'self.mediaPlayer.currentMedia().canonicalUrl()'
 
     def displayPrint(self, _str) :
-        print(_str)
+        #print(_str)
         
         if _str == 'У-' :
             self.labelControlStatus.setText("У")
@@ -245,7 +245,7 @@ class ClientThread(QThread, conf.conf):
                         
                         break
                     
-                    print(data)
+                    #print('Get data:  ', data)
                     
                     self.signalDisplayPrint.emit("У+")
                 except :
@@ -259,7 +259,7 @@ class ClientThread(QThread, conf.conf):
         self.tcpClient = None
         
     def sendCmd(self, cmd):        
-        print(cmd)
+        print('Send data: ', cmd)
         
         if self.tcpClient :
             self.mutex.lock()

@@ -72,7 +72,7 @@ class GHK(QThread):
                         
                     if p['status'] != status :
                         p['callback'](pin)
-                        print(p)
+                        #print(p)
                     
             
         except KeyboardInterrupt:

@@ -107,7 +107,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         wiringpi.pinMode(self.L298_ENB, wiringpi.GPIO.PWM_OUTPUT)
         wiringpi.pinMode(self.SERVO, wiringpi.GPIO.PWM_OUTPUT)
         
-        wiringpi.softPwmCreate(self.L298_ENB, 0, 200)
+        wiringpi.softPwmCreate(self.L298_ENB, 0, 100)
         wiringpi.pwmSetMode(wiringpi.GPIO.PWM_MODE_MS)
 
         wiringpi.pwmSetClock(192)
@@ -139,6 +139,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         GPIO.output(self.L298_IN1, GPIO.HIGH)
         
         val = int(100 * speed / HardwareSetting._moveForward)
+        print('val', val)
         wiringpi.softPwmWrite(self.L298_ENB, val)
         self.CarStatus.status['move'] = val
         

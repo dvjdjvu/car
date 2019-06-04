@@ -24,8 +24,25 @@ class GHK(QThread):
     signalSendCmd = pyqtSignal(object)
     
     def run(self):
-        while True:
-            time.sleep(5)
+        try:
+            while True:
+                time.sleep(0.005)
+                for pin in self.pins :
+                    p = self.pins[pin]
+                    
+                    status = p['status']
+                    
+                    if GPIO.input(pin) == GPIO.HIGH :
+                        p['status'] = True
+                    else :
+                        p['status'] = False
+                        
+                    if p['status'] != status :
+                        p['callback'](pin)
+                        #print(pin)
+            
+        except KeyboardInterrupt:
+            GPIO.cleanup()    
     
     def __init__(self, parent = None):
         #Thread.__init__(self) 
@@ -43,9 +60,8 @@ class GHK(QThread):
                      16 : {'pin': 'X',      'description' : 'повысить передачу', 'status': False, 'callback': self.callbackX, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
                      20 : {'pin': 'Y',      'description' : '',  'status': False, 'callback': self.callbackY, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
                      21 : {'pin': 'Start',  'description' : 'свет', 'status': False, 'callback': self.callbackStart, 'Bouncetime': 400, 'input': GPIO.BOTH}
-                     }         
+                     }
         
-        GPIO.cleanup()
         # Инициализация пинов
         GPIO.setmode(GPIO.BCM)
         
@@ -55,28 +71,7 @@ class GHK(QThread):
             GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)        
             #GPIO.add_event_detect(pin, p['input'], callback=p['callback'])#, bouncetime=p['Bouncetime'])
             #GPIO.add_event_detect(pin, GPIO.RISING, callback=p['callback'])#, bouncetime=self.Bouncetime)
-            #GPIO.add_event_detect(pin, GPIO.FALLING, callback=p['callback'])#, bouncetime=self.Bouncetime)
-           
-        try:
-            while True:
-                time.sleep(0.005)
-                for pin in self.pins :
-                    p = self.pins[pin]
-                    
-                    status = p['status']
-                    
-                    if GPIO.input(pin) == GPIO.HIGH :
-                        p['status'] = True
-                    else :
-                        p['status'] = False
-                        
-                    if p['status'] != status :
-                        p['callback'](pin)
-                        #print(p)
-                    
-            
-        except KeyboardInterrupt:
-            GPIO.cleanup()        
+            #GPIO.add_event_detect(pin, GPIO.FALLING, callback=p['callback'])#, bouncetime=self.Bouncetime) 
     
     def __del__(self):    
         GPIO.cleanup()    

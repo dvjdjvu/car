@@ -9,6 +9,7 @@ import os
 from threading import Thread 
 from PyQt5.QtCore import QThread, pyqtSignal
 
+import time
 import json
 import socket
 
@@ -44,39 +45,50 @@ class GHK(QThread):
                      21 : {'pin': 'Start',  'description' : 'свет', 'status': False, 'callback': self.callbackStart, 'Bouncetime': 400, 'input': GPIO.BOTH}
                      }         
         
+        GPIO.cleanup()
         # Инициализация пинов
         GPIO.setmode(GPIO.BCM)
-    
+        
         for pin in self.pins:
             p = self.pins[pin]
             
             GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)        
-            GPIO.add_event_detect(pin, p['input'], callback=p['callback'])#, bouncetime=p['Bouncetime'])
+            #GPIO.add_event_detect(pin, p['input'], callback=p['callback'])#, bouncetime=p['Bouncetime'])
             #GPIO.add_event_detect(pin, GPIO.RISING, callback=p['callback'])#, bouncetime=self.Bouncetime)
             #GPIO.add_event_detect(pin, GPIO.FALLING, callback=p['callback'])#, bouncetime=self.Bouncetime)
+           
+        try:
+            while True:
+                time.sleep(0.005)
+                for pin in self.pins :
+                    p = self.pins[pin]
+                    
+                    status = p['status']
+                    
+                    if GPIO.input(pin) == GPIO.HIGH :
+                        p['status'] = True
+                    else :
+                        p['status'] = False
+                        
+                    if p['status'] != status :
+                        p['callback'](pin)
+                        print(p)
+                    
+            
+        except KeyboardInterrupt:
+            GPIO.cleanup()        
+    
+    def __del__(self):    
+        GPIO.cleanup()    
     
     def sendCmd(self, p, pin):
+        cmd = {}
+        cmd['type'] = 'remote'
+        cmd['cmd'] = pin['pin']
+        cmd['status'] = pin['status']        
         
-        def retBool(x):
-            if x == 1 :
-                return False
-            return True
-        
-        status = retBool(GPIO.input(p))
-        
-        if (pin['status'] != status):
-            pin['status'] = status
-            #print(pin['status'])
-            
-            cmd = {}
-            cmd['type'] = 'remote'
-            cmd['cmd'] = pin['pin']
-            cmd['status'] = pin['status']
-        
-            self.signalSendCmd.emit(cmd)            
-        
-        return
-        
+        self.signalSendCmd.emit(cmd)
+    
     def callbackSelect(self, pin) :
         self.sendCmd(pin, self.pins[pin])
     

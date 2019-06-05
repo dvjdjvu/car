@@ -15,12 +15,6 @@ import socket
 
 class GHK(QThread):
     
-    #pins = [2, 3, 4, 17, 27, 22, 10, 9, 11, 5, 6, 13, 19, 26, 14, 15, 18, 23, 24, 25, 8, 7, 12, 16, 20, 21]
-    pins = [4, 5, 6, 13, 19, 26, 18, 23, 12, 16, 20, 21]
-    
-    Bouncetime = 100
-    pins = None
-
     signalSendCmd = pyqtSignal(object)
     
     def run(self):
@@ -33,13 +27,12 @@ class GHK(QThread):
                     status = p['status']
                     
                     if GPIO.input(pin) == GPIO.HIGH :
-                        p['status'] = True
-                    else :
                         p['status'] = False
+                    else :
+                        p['status'] = True
                         
                     if p['status'] != status :
                         p['callback'](pin)
-                        #print(pin)
             
         except KeyboardInterrupt:
             GPIO.cleanup()    

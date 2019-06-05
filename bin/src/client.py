@@ -221,9 +221,11 @@ class ClientThread(QThread, conf.conf):
             self.tcpClient = None
             
             try :
-                self.tcpClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.tcpClient.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
+                tcpClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                tcpClient.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
                 self.signalDisplayPrint.emit("У+")
+                
+                self.tcpClient = tcpClient
             except socket.error as e:
                 self.signalDisplayPrint.emit("У-")
                 
@@ -251,6 +253,7 @@ class ClientThread(QThread, conf.conf):
                 except :
                     self.tcpClient.close() 
                     self.tcpClient = None
+                    self.signalDisplayPrint.emit("У-")
                     break
                 
             print('Fail self.tcpClient', self.tcpClient)
@@ -277,6 +280,7 @@ class ClientThread(QThread, conf.conf):
             self.mutex.unlock()
         else :
             print("self.tcpClient", self.tcpClient)
+            self.signalDisplayPrint.emit("У-")
     
 class Remote(conf.conf):
     
@@ -286,15 +290,14 @@ class Remote(conf.conf):
         player = VideoWindow()
         player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
         
-        player.show()
-        #player.showFullScreen()
+        #player.show()
+        player.showFullScreen()
         
         player.setCursor(Qt.BlankCursor)
         
         clientThread = ClientThread()
         keyboard = GHKeyboard.GHK()
         _joystick = joystick.Joystick()
-        
         
         clientThread.signalDisplayPrint.connect(player.displayPrint)
         keyboard.signalSendCmd.connect(clientThread.sendCmd)

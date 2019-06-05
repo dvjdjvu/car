@@ -19,5 +19,5 @@ class HardwareSetting:
     valueStep = 2944
         
     #Максимальные скоростные значения.
-    _moveForward = 4.5
-    _moveBack = -4.5   
+    _moveForward = 1.0
+    _moveBack = -1.0   

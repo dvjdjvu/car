@@ -23,9 +23,11 @@ import sys
 import time
 import conf
 import helper
+import subprocess
 
 import GHKeyboard
-import joystick
+import Joystick
+import WifiCheck
 
 class VideoWindow(QMainWindow, conf.conf):
 
@@ -74,6 +76,12 @@ class VideoWindow(QMainWindow, conf.conf):
         self.labelControlStatus.raise_()
         self.displayPrint("У-")
         
+        self.labelWifiStatus = QLabel(self.videoWidget)
+        self.labelWifiStatus.setGeometry(0, 0, self.textSize, self.textSize)
+        self.labelWifiStatus.setStyleSheet("QLabel { background-color : black; color : red; font-size:" + str(self.textSize) + "px}")
+        self.labelWifiStatus.raise_()
+        self.displayPrint("wifi-")
+        
         self.mediaPlayer.setMedia(QMediaContent(QUrl("http://{}:{}/?action=stream".format(conf.conf.ServerIP, conf.conf.videoServerPort))))
         self.mediaPlayer.play()
         
@@ -88,7 +96,7 @@ class VideoWindow(QMainWindow, conf.conf):
     def resizeEvent(self, e):
         self.labelVideoStatus.move(10.0, self.mainWidget.height() - self.textSize)
         self.labelControlStatus.move(self.mainWidget.width() - self.textSize, self.mainWidget.height() - self.textSize)
-        pass
+        self.labelWifiStatus.move(10.0, 10.0)
 
     def exitCall(self):
         sys.exit(app.exec_())
@@ -159,6 +167,12 @@ class VideoWindow(QMainWindow, conf.conf):
             self.labelVideoStatus.show()
         elif _str == 'В+' :
             self.labelControlStatus.hide()
+        elif _str == 'wifi-' :
+            self.labelWifiStatus.setText("W")
+            self.labelWifiStatus.show()
+        elif _str == 'wifi+' :
+            self.labelWifiStatus.hide()        
+            
 
     def event(self, e):
         if e.type() == QtCore.QEvent.KeyPress:
@@ -219,6 +233,13 @@ class ClientThread(QThread, conf.conf):
         
         while not self.tcpClient:
             self.tcpClient = None
+            
+            command = "/usr/local/car/bin/src/wifiCheck.py wlan0"  # launch your python2 script using bash
+            process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+            output, error = process.communicate()  # receive output from the python2 script            
+            
+            if output != 'djvu-car-pi' :
+                print('wifi error')
             
             try :
                 tcpClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -290,22 +311,25 @@ class Remote(conf.conf):
         player = VideoWindow()
         player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
         
-        #player.show()
-        player.showFullScreen()
+        player.show()
+        #player.showFullScreen()
         
         player.setCursor(Qt.BlankCursor)
         
         clientThread = ClientThread()
         keyboard = GHKeyboard.GHK()
-        _joystick = joystick.Joystick()
+        joystick = Joystick.Joystick()
+        wifiCheck = WifiCheck.WifiCheck()
         
         clientThread.signalDisplayPrint.connect(player.displayPrint)
         keyboard.signalSendCmd.connect(clientThread.sendCmd)
-        _joystick.signalSendCmd.connect(clientThread.sendCmd)
+        joystick.signalSendCmd.connect(clientThread.sendCmd)
+        wifiCheck.signalSendStatus.connect(player.displayPrint)
         
         clientThread.start()
         keyboard.start()
-        _joystick.start()
+        joystick.start()
+        wifiCheck.start()
         
         sys.exit(app.exec_())  
 

@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import sys, re, time
-import subprocess, os
+import subprocess, os, signal
 
 from PyQt5.QtCore import QThread, pyqtSignal
 
@@ -34,7 +34,9 @@ class WifiCheck(QThread):
                 
             self.sendStatus('wifi-')
             
-            os.killpg(os.getpgid(self.ps.pid), signal.SIGTERM)
+            self.ps.kill()
+            
+            #os.killpg(os.getpgid(self.ps.pid), signal.SIGTERM)
             
     def sendStatus(self, status):        
         self.signalSendStatus.emit(status)    

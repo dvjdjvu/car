@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import sys, re, time
-import subprocess
+import subprocess, os
 
 from PyQt5.QtCore import QThread, pyqtSignal
 

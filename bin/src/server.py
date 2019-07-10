@@ -110,8 +110,10 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         wiringpi.softPwmCreate(self.L298_ENB, 0, 100)
         wiringpi.pwmSetMode(wiringpi.GPIO.PWM_MODE_MS)
 
+        #wiringpi.pwmSetClock(192)
+        #wiringpi.pwmSetRange(2000)
         wiringpi.pwmSetClock(192)
-        wiringpi.pwmSetRange(2000)
+        wiringpi.pwmSetRange(4000)
             
         GPIO.setup(self.L298_IN1, GPIO.OUT)
         GPIO.output(self.L298_IN1, GPIO.LOW)

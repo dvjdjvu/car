@@ -110,10 +110,8 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         wiringpi.softPwmCreate(self.L298_ENB, 0, 100)
         wiringpi.pwmSetMode(wiringpi.GPIO.PWM_MODE_MS)
 
-        #wiringpi.pwmSetClock(192)
-        #wiringpi.pwmSetRange(2000)
         wiringpi.pwmSetClock(192)
-        wiringpi.pwmSetRange(4000)
+        wiringpi.pwmSetRange(2000)
             
         GPIO.setup(self.L298_IN1, GPIO.OUT)
         GPIO.output(self.L298_IN1, GPIO.LOW)
@@ -207,21 +205,35 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                         
                         self.CarStatus.status['light'] = self.statusLight
                         answer['status'] = self.statusLight
-                # Движение вперед.
+                # Движение вперед. Частичное 0.75
                 elif cmd['cmd'] == 'X':
                     print(cmd)
                     if cmd['status'] == True :
-                        self.moveForward(HardwareSetting._moveForward)
+                        self.moveForward(cmd['val'] * HardwareSetting._moveForward)
                     else :
                         self.moveStop()
-                # Движение назад.
+                # Движение вперед. Частичное 0.5
+                elif cmd['cmd'] == 'Y':
+                    print(cmd)
+                    if cmd['status'] == True :
+                        self.moveForward(cmd['val'] * HardwareSetting._moveForward)
+                    else :
+                        self.moveStop()
+                # Движение вперед. Полное 1
+                elif cmd['cmd'] == 'A':
+                    print(cmd)
+                    if cmd['status'] == True :
+                        self.moveForward(cmd['val'] * HardwareSetting._moveForward)
+                    else :
+                        self.moveStop()
+                # Движение назад. Частичное 0.66
                 elif cmd['cmd'] == 'B':
                     print(cmd)
                     if cmd['status'] == True :
-                        self.moveBack(HardwareSetting._moveBack)
+                        self.moveBack(cmd['val'] * HardwareSetting._moveBack)
                     else :
-                        self.moveStop()                    
-                elif cmd['cmd'] == 'move':
+                        self.moveStop()
+                elif cmd['cmd'] == 'turn':
                     '''
                     speed = cmd['x']
                     if speed == 0 :

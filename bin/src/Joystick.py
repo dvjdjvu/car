@@ -50,7 +50,7 @@ class Joystick(QThread, HardwareSetting):
     def sendCmd(self, x, y):
         cmd = {}
         cmd['type'] = 'remote'
-        cmd['cmd'] = 'move'
+        cmd['cmd'] = 'turn'
         cmd['x'] = x
         cmd['y'] = y
         

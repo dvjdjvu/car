@@ -16,8 +16,8 @@ class WifiCheck(QThread):
 
     def run(self):
         while True:
-            time.sleep(0.5)
-            print('THread wifi')
+            time.sleep(1.0)
+            #print('THread wifi')
             
             self.ps = subprocess.Popen(['iwgetid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             
@@ -29,7 +29,7 @@ class WifiCheck(QThread):
                     continue
                 
             except subprocess.CalledProcessError:
-                print('Wifi Error')
+                #print('Wifi Error')
                 pass
                 
             self.sendStatus('wifi-')

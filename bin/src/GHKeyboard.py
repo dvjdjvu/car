@@ -69,11 +69,12 @@ class GHK(QThread):
     def __del__(self):    
         GPIO.cleanup()    
     
-    def sendCmd(self, p, pin):
+    def sendCmd(self, p, pin, val = 0.0):
         cmd = {}
         cmd['type'] = 'remote'
         cmd['cmd'] = pin['pin']
-        cmd['status'] = pin['status']        
+        cmd['status'] = pin['status']
+        cmd['val'] = val
         
         self.signalSendCmd.emit(cmd)
     
@@ -93,7 +94,7 @@ class GHK(QThread):
         self.sendCmd(pin, self.pins[pin])
     
     def callbackA(self, pin) :
-        self.sendCmd(pin, self.pins[pin])
+        self.sendCmd(pin, self.pins[pin], 1.0)
     
     def callbackTR(self, pin) :
         self.sendCmd(pin, self.pins[pin])
@@ -102,13 +103,13 @@ class GHK(QThread):
         self.sendCmd(pin, self.pins[pin])
     
     def callbackB(self, pin) :
-        self.sendCmd(pin, self.pins[pin])
+        self.sendCmd(pin, self.pins[pin], -0.66)
     
     def callbackX(self, pin) :
-        self.sendCmd(pin, self.pins[pin])
+        self.sendCmd(pin, self.pins[pin], 0.75)
     
     def callbackY(self, pin) :
-        self.sendCmd(pin, self.pins[pin])
+        self.sendCmd(pin, self.pins[pin], 0.5)
     
     def callbackStart(self, pin) :
         self.sendCmd(pin, self.pins[pin])

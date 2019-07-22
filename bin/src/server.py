@@ -21,15 +21,16 @@ sys.path.append('../../conf')
 import conf
 from HardwareSetting import HardwareSetting 
 
-class PWM:
-    def __init__(self, address = 0x40):
-        self.pwm = Adafruit_PCA9685.PCA9685(address)
+class PWM:    
+    def __init__(self, pin):
+        self.pin = pin
+        self.servo_pwm = Adafruit_PCA9685.PCA9685()
 
-    def set(self, pin, val):
-        self.pwm.set_pwm(pin, 0, val)
-        
-    def setFreq(self, freq = 60):
-        self.pwm.set_pwm_freq(freq)
+    def set(self, val):
+        self.servo_pwm.set_pwm(self.pin, 0, val)
+    
+    def setFreq(self, freq = 50):
+        self.servo_pwm.set_pwm_freq(freq)
 
 class CarStatus:
     def __init__(self):
@@ -104,22 +105,22 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         self.L298_ENB = 25
         
         # Управление сервоприводом поворота колес
-        self.pwm = PWM()
-        self.pwm.setFreq()
         self.SERVO = 7
-        '''
-        self.SERVO = 18
+        self.servo_pwm = PWM(self.SERVO)
+        self.servo_pwm.setFreq()
+        
+        #self.SERVO = 18
         
         wiringpi.wiringPiSetupGpio()
         wiringpi.pinMode(self.L298_ENB, wiringpi.GPIO.PWM_OUTPUT)
-        wiringpi.pinMode(self.SERVO, wiringpi.GPIO.PWM_OUTPUT)
+        #wiringpi.pinMode(self.SERVO, wiringpi.GPIO.PWM_OUTPUT)
         
         wiringpi.softPwmCreate(self.L298_ENB, 0, 100)
         wiringpi.pwmSetMode(wiringpi.GPIO.PWM_MODE_MS)
 
         wiringpi.pwmSetClock(192)
         wiringpi.pwmSetRange(2000)
-        ''' 
+        
         GPIO.setup(self.L298_IN1, GPIO.OUT)
         GPIO.output(self.L298_IN1, GPIO.LOW)
         
@@ -159,20 +160,22 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         
     def turnCenter(self):
         val = int(HardwareSetting._turnCenter)
-        #wiringpi.pwmWrite(self.SERVO, val)
-        self.pwm.set(self.SERVO, val)
+        #print('turnCenter {}', val)
+        self.servo_pwm.set(val)
         self.CarStatus.status['turn'] = val
         
     def turnLeft(self, turn):
+        #print('turnLeft {}', turn)
         val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
-        #wiringpi.pwmWrite(self.SERVO, val)
-        self.pwm.set(self.SERVO, val)
+        #print('turnLeft {}', val)
+        self.servo_pwm.set(val)
         self.CarStatus.status['turn'] = val
         
     def turnRight(self, turn):
+        #print('turnRight {}', turn)
         val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
-        #wiringpi.pwmWrite(self.SERVO, val)
-        self.pwm.set(self.SERVO, val)
+        #print('turnRight {}', val)
+        self.servo_pwm.set(val)
         self.CarStatus.status['turn'] = val
 
     def run(self): 

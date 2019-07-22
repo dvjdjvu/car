@@ -38,9 +38,15 @@ class Joystick(QThread, HardwareSetting):
             else :
                 Y = -1 * (HardwareSetting.yZero - Y)
             
-            if (abs(self.x - X) >= 0.05 or abs(self.y - Y) >= 0.05) :
+            if (abs(X) < 5) :
+                X = 0
+            if (abs(Y) < 5) :
+                Y = 0
+        
+            if (abs(self.x - X) >= 1.0 or abs(self.y - Y) >= 1.0) :
                 #print(round(X, 1), round(Y, 1))
-                self.sendCmd(round(X, 1), round(Y, 1))
+                #print('x {} y {}'.format(round(X), round(Y)))
+                self.sendCmd(round(X), round(Y))
             
             self.x = X
             self.y = Y

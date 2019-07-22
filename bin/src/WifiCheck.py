@@ -23,7 +23,7 @@ class WifiCheck(QThread):
             
             try:
                 output = subprocess.check_output(('grep', 'ESSID'), stdin=self.ps.stdout)
-                print(output)
+                #print(output)
                 if re.search(r'djvu-car-pi3', str(output)) :
                     self.sendStatus('wifi+')
                     continue

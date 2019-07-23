@@ -94,7 +94,7 @@ class GHK(QThread):
         self.sendCmd(pin, self.pins[pin])
     
     def callbackA(self, pin) :
-        self.sendCmd(pin, self.pins[pin], 1.0)
+        self.sendCmd(pin, self.pins[pin], 0.75)
     
     def callbackTR(self, pin) :
         self.sendCmd(pin, self.pins[pin])
@@ -106,7 +106,7 @@ class GHK(QThread):
         self.sendCmd(pin, self.pins[pin], 0.66)
     
     def callbackX(self, pin) :
-        self.sendCmd(pin, self.pins[pin], 0.75)
+        self.sendCmd(pin, self.pins[pin], 1.0)
     
     def callbackY(self, pin) :
         self.sendCmd(pin, self.pins[pin], 0.5)

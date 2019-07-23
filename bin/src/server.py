@@ -11,8 +11,8 @@ import json
 from threading import Thread 
 from socketserver import ThreadingMixIn 
 
-import Adafruit_PCA9685
 import RPi.GPIO as GPIO
+import PWM
 
 import os
 import sys
@@ -20,17 +20,6 @@ sys.path.append('../../conf')
 
 import conf
 from HardwareSetting import HardwareSetting 
-
-class PWM:    
-    def __init__(self, pin):
-        self.pin = pin
-        self.servo_pwm = Adafruit_PCA9685.PCA9685()
-
-    def set(self, val):
-        self.servo_pwm.set_pwm(self.pin, 0, val)
-    
-    def setFreq(self, freq = 50):
-        self.servo_pwm.set_pwm_freq(freq)
 
 class CarStatus:
     def __init__(self):
@@ -99,17 +88,26 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         GPIO.setup(self.gpioLight, GPIO.OUT)
         GPIO.output(self.gpioLight, GPIO.LOW)
         
+        # Управление сервоприводом поворота колес.
+        self.SERVO = 7
+        self.pwm_servo = PWM.PWM_Servo(self.SERVO)
+        self.pwm_servo.setFreq()
+        
+        # Управление L298, мотор движения машинки.
+        self.ena = 10
+        self.in1 = 12
+        self.in2 = 13
+        self.in3 = 14
+        self.in4 = 15
+        self.enb = 11
+        self.pwm_motor = PWM.PWM_L298N_Motor(self.ena, self.in1, self.in2, self.in3, self.in4, self.enb)
+        self.pwm_motor.setFreq()
+        
+        '''
         # Управление L298, мотор движения машинки.
         self.L298_IN1 = 23
         self.L298_IN2 = 24
         self.L298_ENB = 25
-        
-        # Управление сервоприводом поворота колес
-        self.SERVO = 7
-        self.servo_pwm = PWM(self.SERVO)
-        self.servo_pwm.setFreq()
-        
-        #self.SERVO = 18
         
         wiringpi.wiringPiSetupGpio()
         wiringpi.pinMode(self.L298_ENB, wiringpi.GPIO.PWM_OUTPUT)
@@ -126,7 +124,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         
         GPIO.setup(self.L298_IN2, GPIO.OUT)
         GPIO.output(self.L298_IN2, GPIO.LOW)    
-
+        '''
     def __del__(self):
         GPIO.output(self.gpioLight, GPIO.LOW)
         
@@ -136,46 +134,38 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         GPIO.cleanup()
 
     def moveStop(self):
-        GPIO.output(self.L298_IN1, GPIO.LOW)
-        GPIO.output(self.L298_IN2, GPIO.LOW)
-        
+        self.pwm_motor.stop()
         self.CarStatus.status['move'] = 0
         
     def moveForward(self, speed):
-        GPIO.output(self.L298_IN2, GPIO.LOW)
-        GPIO.output(self.L298_IN1, GPIO.HIGH)
-        
         val = int(100 * speed / HardwareSetting._moveForward)
-        print('val', val)
-        wiringpi.softPwmWrite(self.L298_ENB, val)
+        #print('val', val)
+        self.pwm_motor.forward(val)
         self.CarStatus.status['move'] = val
         
     def moveBack(self, speed):
-        GPIO.output(self.L298_IN1, GPIO.LOW)
-        GPIO.output(self.L298_IN2, GPIO.HIGH)
-        
         val = int(100 * speed / HardwareSetting._moveBack)
-        wiringpi.softPwmWrite(self.L298_ENB, val)
+        self.pwm_motor.forward(val)
         self.CarStatus.status['move'] = val
         
     def turnCenter(self):
         val = int(HardwareSetting._turnCenter)
         #print('turnCenter {}', val)
-        self.servo_pwm.set(val)
+        self.pwm_servo.set(val)
         self.CarStatus.status['turn'] = val
         
     def turnLeft(self, turn):
         #print('turnLeft {}', turn)
         val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
         #print('turnLeft {}', val)
-        self.servo_pwm.set(val)
+        self.pwm_servo.set(val)
         self.CarStatus.status['turn'] = val
         
     def turnRight(self, turn):
         #print('turnRight {}', turn)
         val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
         #print('turnRight {}', val)
-        self.servo_pwm.set(val)
+        self.pwm_servo.set(val)
         self.CarStatus.status['turn'] = val
 
     def run(self): 
@@ -218,7 +208,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                         
                         self.CarStatus.status['light'] = self.statusLight
                         answer['status'] = self.statusLight
-                # Движение вперед. Частичное 0.75
+                # Движение вперед. Полное 1
                 elif cmd['cmd'] == 'X':
                     print(cmd)
                     if cmd['status'] == True :
@@ -232,7 +222,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                         self.moveForward(cmd['val'] * HardwareSetting._moveForward)
                     else :
                         self.moveStop()
-                # Движение вперед. Полное 1
+                # Движение вперед. Частичное 0.75
                 elif cmd['cmd'] == 'A':
                     print(cmd)
                     if cmd['status'] == True :

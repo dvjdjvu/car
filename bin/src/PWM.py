@@ -54,8 +54,13 @@ class PWM_L298N_Motor:
         Остановка мотора.
         """
         
-        self.pwm.set_pwm(self.ena, 0, 0)
-        self.pwm.set_pwm(self.enb, 0, 0)
+        self.pwm.set_pwm(self.ena, 0, self.LOW)
+        self.pwm.set_pwm(self.enb, 0, self.LOW)
+
+        self.pwm.set_pwm(self.in1, 0, self.LOW)
+        self.pwm.set_pwm(self.in4, 0, self.LOW)
+        self.pwm.set_pwm(self.in2, 0, self.LOW)
+        self.pwm.set_pwm(self.in3, 0, self.LOW)
 
     def forward(self, speed):
         """
@@ -68,6 +73,11 @@ class PWM_L298N_Motor:
         self.pwm.set_pwm(self.ena, 0, int(speed * self.HIGH))
         self.pwm.set_pwm(self.enb, 0, int(speed * self.HIGH))
         
+        self.pwm.set_pwm(self.in1, 0, self.HIGH)
+        self.pwm.set_pwm(self.in4, 0, self.HIGH)
+        self.pwm.set_pwm(self.in2, 0, self.LOW)
+        self.pwm.set_pwm(self.in3, 0, self.LOW)        
+        
     def back(self, speed):
         """
         Движение назад.
@@ -78,6 +88,11 @@ class PWM_L298N_Motor:
         
         self.pwm.set_pwm(self.ena, 0, int(speed * self.HIGH))
         self.pwm.set_pwm(self.enb, 0, int(speed * self.HIGH))
+        
+        self.pwm.set_pwm(self.in1, 0, self.LOW)
+        self.pwm.set_pwm(self.in4, 0, self.LOW)
+        self.pwm.set_pwm(self.in2, 0, self.HIGH)
+        self.pwm.set_pwm(self.in3, 0, self.HIGH)        
     
     def setFreq(self, freq = 50):
         """

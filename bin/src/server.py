@@ -95,26 +95,14 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         
         # Управление L298, мотор движения машинки.
         self.L298_ENA = 10
-        self.L298_IN1 = 6
+        self.L298_IN1 = 12
         self.L298_IN2 = 13
-        self.L298_IN3 = 19
-        self.L298_IN4 = 26
+        self.L298_IN3 = 14
+        self.L298_IN4 = 15        
         self.L298_ENB = 11
         self.pwm_motor = PWM.PWM_L298N_Motor(self.L298_ENA, self.L298_IN1, self.L298_IN2, self.L298_IN3, self.L298_IN4, self.L298_ENB)
         self.pwm_motor.setFreq()
-        
-        GPIO.setup(self.L298_IN1, GPIO.OUT)
-        GPIO.output(self.L298_IN1, GPIO.LOW)
-        
-        GPIO.setup(self.L298_IN2, GPIO.OUT)
-        GPIO.output(self.L298_IN2, GPIO.LOW)
-        
-        GPIO.setup(self.L298_IN3, GPIO.OUT)
-        GPIO.output(self.L298_IN3, GPIO.LOW)
-        
-        GPIO.setup(self.L298_IN4, GPIO.OUT)
-        GPIO.output(self.L298_IN4, GPIO.LOW)           
-        
+
     def __del__(self):
         GPIO.output(self.gpioLight, GPIO.LOW)
         
@@ -124,30 +112,15 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         GPIO.cleanup()
 
     def moveStop(self):
-        GPIO.output(self.L298_IN1, GPIO.LOW)
-        GPIO.output(self.L298_IN4, GPIO.LOW)
-        GPIO.output(self.L298_IN2, GPIO.LOW)
-        GPIO.output(self.L298_IN3, GPIO.LOW)
-        
         self.pwm_motor.stop()
         self.CarStatus.status['move'] = 0
         
     def moveForward(self, speed):
         #print('val', val)
-        GPIO.output(self.L298_IN1, GPIO.HIGH)
-        GPIO.output(self.L298_IN4, GPIO.HIGH)
-        GPIO.output(self.L298_IN2, GPIO.LOW)
-        GPIO.output(self.L298_IN3, GPIO.LOW)        
-        
         self.pwm_motor.forward(speed)
         self.CarStatus.status['move'] = speed
         
-    def moveBack(self, speed):
-        GPIO.output(self.L298_IN1, GPIO.LOW)
-        GPIO.output(self.L298_IN4, GPIO.LOW)
-        GPIO.output(self.L298_IN2, GPIO.HIGH)
-        GPIO.output(self.L298_IN3, GPIO.HIGH)        
-        
+    def moveBack(self, speed):        
         self.pwm_motor.back(speed)
         self.CarStatus.status['move'] = speed
         

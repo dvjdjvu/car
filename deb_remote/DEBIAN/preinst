@@ -1,0 +1,13 @@
+#!/bin/bash
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+if [ -f /usr/local/car/bin/car.py ] 
+then 
+    echo -e "${RED}[install]:${NC} stop, this is not remote OS" 
+    exit 1 
+else
+    echo -e "${GREEN}[install]:${NC} start"
+fi

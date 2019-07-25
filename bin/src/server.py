@@ -21,6 +21,8 @@ sys.path.append('../../conf')
 import conf
 from HardwareSetting import HardwareSetting 
 
+from SystemStatus import * 
+
 class CarStatus:
     def __init__(self):
         self.status = {}
@@ -213,16 +215,6 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                     else :
                         self.moveStop()
                 elif cmd['cmd'] == 'turn':
-                    '''
-                    speed = cmd['x']
-                    if speed == 0 :
-                        self.moveStop()
-                    elif speed > 0 :
-                        self.moveForward(self, speed)
-                    elif speed < 0 :
-                        self.moveBack(self, -speed)
-                    ''' 
-                    
                     turn = cmd['y']
                     if turn == 0 :
                         self.turnCenter()

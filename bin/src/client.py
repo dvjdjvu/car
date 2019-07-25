@@ -234,15 +234,11 @@ class ClientThread(QThread, conf.conf):
         while not self.tcpClient:
             self.tcpClient = None
             
-            command = "/usr/local/car/bin/src/wifiCheck.py wlan0"  # launch your python2 script using bash
-            #process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-            #output, error = process.communicate()  # receive output from the python2 script            
-            
-            #if output != 'djvu-car-pi' :
-            #    print('wifi error')
+            #print('connect self.tcpClient')
             
             try :
                 tcpClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                tcpClient.settimeout(2.0)
                 tcpClient.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
                 self.signalDisplayPrint.emit("У+")
                 
@@ -255,7 +251,7 @@ class ClientThread(QThread, conf.conf):
                 
                 continue        
             
-            print('Ok self.tcpClient', self.tcpClient)
+            #print('Ok self.tcpClient', self.tcpClient)
             
             while True:
                 try :

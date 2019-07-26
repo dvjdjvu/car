@@ -1,3 +1,5 @@
 #!/bin/bash
 ldconfig
+
+chmod u+x /usr/local/car/bin/*
 exit 0

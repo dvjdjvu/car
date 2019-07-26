@@ -29,7 +29,7 @@ import GHKeyboard
 import Joystick
 import WifiCheck
 
-from SystemStatus import * 
+from CarStatus import * 
 
 class VideoWindow(QMainWindow, conf.conf):
 
@@ -129,11 +129,11 @@ class VideoWindow(QMainWindow, conf.conf):
         elif status == QMediaPlayer.EndOfMedia :
             self.displayPrint("В-")
             self.timerVideoRecconect.start(conf.conf.timeRecconect * 1000)
-            carStatus['network']['video'] = False
+            carStatus.statusRemote['network']['video'] = False
         elif status == QMediaPlayer.InvalidMedia :
             self.displayPrint("В-")
             self.timerVideoRecconect.start(conf.conf.timeRecconect * 1000)
-            carStatus['network']['video'] = False
+            carStatus.statusRemote['network']['video'] = False
 
     def positionChanged(self, position):
         self.positionSlider.setValue(position)
@@ -164,24 +164,24 @@ class VideoWindow(QMainWindow, conf.conf):
         if _str == 'У-' :
             self.labelControlStatus.setText("У")
             self.labelControlStatus.show()
-            carStatus['network']['control'] = False
+            carStatus.statusRemote['network']['control'] = False
         elif _str == 'У+' :
             self.labelControlStatus.hide()
-            carStatus['network']['control'] = True
+            carStatus.statusRemote['network']['control'] = True
         elif _str == 'В-' :
             self.labelVideoStatus.setText("В");
             self.labelVideoStatus.show()
-            carStatus['network']['video'] = False
+            carStatus.statusRemote['network']['video'] = False
         elif _str == 'В+' :
             self.labelControlStatus.hide()
-            carStatus['network']['video'] = True
+            carStatus.statusRemote['network']['video'] = True
         elif _str == 'wifi-' :
             self.labelWifiStatus.setText("W")
             self.labelWifiStatus.show()
-            carStatus['network']['wifi'] = False
+            carStatus.statusRemote['network']['wifi'] = False
         elif _str == 'wifi+' :
             self.labelWifiStatus.hide()
-            carStatus['network']['video'] = True
+            carStatus.statusRemote['network']['video'] = True
             
 
     def event(self, e):
@@ -251,12 +251,12 @@ class ClientThread(QThread, conf.conf):
                 tcpClient.settimeout(2.0)
                 tcpClient.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
                 self.signalDisplayPrint.emit("У+")
-                carStatus['network']['control'] = True
+                carStatus.statusRemote['network']['control'] = True
                 
                 self.tcpClient = tcpClient
             except socket.error as e:
                 self.signalDisplayPrint.emit("У-")
-                carStatus['network']['control'] = False
+                carStatus.statusRemote['network']['control'] = False
                 
                 time.sleep(conf.conf.timeRecconect)
                 self.tcpClient = None
@@ -271,7 +271,7 @@ class ClientThread(QThread, conf.conf):
                     data = data.decode()
                     if data == '' :
                         self.signalDisplayPrint.emit("У-")
-                        carStatus['network']['control'] = False
+                        carStatus.statusRemote['network']['control'] = False
                         self.tcpClient.close() 
                         self.tcpClient = None
                         
@@ -280,12 +280,12 @@ class ClientThread(QThread, conf.conf):
                     #print('Get data:  ', data)
                     
                     self.signalDisplayPrint.emit("У+")
-                    carStatus['network']['control'] = True
+                    carStatus.statusRemote['network']['control'] = True
                 except :
                     self.tcpClient.close() 
                     self.tcpClient = None
                     self.signalDisplayPrint.emit("У-")
-                    carStatus['network']['control'] = False
+                    carStatus.statusRemote['network']['control'] = False
                     break
                 
             print('Fail self.tcpClient', self.tcpClient)
@@ -302,20 +302,20 @@ class ClientThread(QThread, conf.conf):
             try:
                 self.tcpClient.send(json.dumps(cmd, ensure_ascii=False).encode())
                 self.signalDisplayPrint.emit("У+")
-                carStatus['network']['control'] = True
+                carStatus.statusRemote['network']['control'] = True
             except:
                 print("error", self.tcpClient)
                 self.tcpClient.close()
                 self.tcpClient = None
                 
                 self.signalDisplayPrint.emit("У-")
-                carStatus['network']['control'] = False
+                carStatus.statusRemote['network']['control'] = False
 
             self.mutex.unlock()
         else :
             print("self.tcpClient", self.tcpClient)
             self.signalDisplayPrint.emit("У-")
-            carStatus['network']['control'] = False
+            carStatus.statusRemote['network']['control'] = False
     
 class Remote(conf.conf):
     

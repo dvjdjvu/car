@@ -22,7 +22,7 @@ import conf
 from HardwareSetting import HardwareSetting 
 
 from SystemStatus import * 
-
+'''
 class CarStatus:
     def __init__(self):
         self.status = {}
@@ -33,7 +33,7 @@ class CarStatus:
     
     def __del__(self):
         return
-
+'''
 class ServerThread(Thread, conf.conf):
     tcpServer = None
     threads = [] 
@@ -77,7 +77,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         print("[+] New server socket thread started for " + ip + ":" + str(port))      
         
         # Класс состояния машинки.
-        self.CarStatus = CarStatus()
+        #self.CarStatus = CarStatus()
         
         GPIO.cleanup() 
         # Инициализация пинов
@@ -115,36 +115,42 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
 
     def moveStop(self):
         self.pwm_motor.stop()
-        self.CarStatus.status['move'] = 0
+        #self.CarStatus.status['move'] = 0
+        CarStatus.statusCar['car']['speed'] = 0
         
     def moveForward(self, speed):
         #print('val', val)
         self.pwm_motor.forward(speed)
-        self.CarStatus.status['move'] = speed
+        #self.CarStatus.status['move'] = speed
+        CarStatus.statusCar['car']['speed'] = speed
         
     def moveBack(self, speed):        
         self.pwm_motor.back(speed)
-        self.CarStatus.status['move'] = speed
+        #self.CarStatus.status['move'] = speed
+        CarStatus.statusCar['car']['speed'] = -1 * speed
         
     def turnCenter(self):
         val = int(HardwareSetting._turnCenter)
         #print('turnCenter {}', val)
         self.pwm_servo.set(val)
-        self.CarStatus.status['turn'] = val
+        #self.CarStatus.status['turn'] = val
+        CarStatus.statusCar['car']['turn'] = val
         
     def turnLeft(self, turn):
         #print('turnLeft {}', turn)
         val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
         #print('turnLeft {}', val)
         self.pwm_servo.set(val)
-        self.CarStatus.status['turn'] = val
+        #self.CarStatus.status['turn'] = val
+        CarStatus.statusCar['car']['turn'] = val
         
     def turnRight(self, turn):
         #print('turnRight {}', turn)
         val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
         #print('turnRight {}', val)
         self.pwm_servo.set(val)
-        self.CarStatus.status['turn'] = val
+        #self.CarStatus.status['turn'] = val
+        CarStatus.statusCar['car']['turn'] = val
 
     def run(self): 
         while True : 
@@ -184,8 +190,9 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                         
                         self.statusLight = not self.statusLight
                         
-                        self.CarStatus.status['light'] = self.statusLight
-                        answer['status'] = self.statusLight
+                        #self.CarStatus.status['light'] = self.statusLight
+                        #answer['status'] = self.statusLight
+                        CarStatus.statusCar['car']['light'] = self.statusLight
                 # Движение вперед. Полное 1
                 elif cmd['cmd'] == 'X':
                     print(cmd)
@@ -222,7 +229,8 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                         self.turnRight(turn)
                     elif turn < 0 : # Лево
                         self.turnLeft(turn)
-                                              
+                
+                answer['state'] = CarStatus.statusCar['car']
                 self.conn.send(json.dumps(answer, ensure_ascii=False).encode())
 
     def handler(self):

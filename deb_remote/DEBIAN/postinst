@@ -1,5 +1,17 @@
 #!/bin/bash
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+if [ -f /usr/local/car/bin/car.py ] 
+then 
+    echo -e "" 
+    exit 0 
+else
+    echo -e ""
+fi
+
 chmod u+x /usr/local/car/bin/*
 chmod u+x /usr/share/applications/remote.desktop
 #cp /usr/share/applications/remote.desktop /etc/xdg/autostart/

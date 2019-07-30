@@ -10,4 +10,4 @@ class CarStatus:
                     'car': {'speed': 0, 'turn': 0, 'light': False}
                     }
     
-carStatus = SystemStatus()
+carStatus = CarStatus()

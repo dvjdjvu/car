@@ -21,7 +21,7 @@ sys.path.append('../../conf')
 import conf
 from HardwareSetting import HardwareSetting 
 
-from SystemStatus import * 
+from CarStatus import * 
 '''
 class CarStatus:
     def __init__(self):

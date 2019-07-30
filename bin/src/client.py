@@ -244,6 +244,9 @@ class ClientThread(QThread, conf.conf):
         while not self.tcpClient:
             self.tcpClient = None
             
+            #if not carStatus.statusRemote['network']['wifi'] :
+            #    time.sleep(1.0)
+            #    continue
             #print('connect self.tcpClient')
             
             try :
@@ -264,6 +267,8 @@ class ClientThread(QThread, conf.conf):
                 continue        
             
             #print('Ok self.tcpClient', self.tcpClient)
+            if self.tcpClient :
+                self.tcpClient.settimeout(None)
             
             while True:
                 try :

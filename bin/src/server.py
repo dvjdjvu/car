@@ -22,18 +22,7 @@ import conf
 from HardwareSetting import HardwareSetting 
 
 from CarStatus import * 
-'''
-class CarStatus:
-    def __init__(self):
-        self.status = {}
-        
-        self.status['light'] = False
-        self.status['move'] = 0
-        self.status['turn'] = 0
-    
-    def __del__(self):
-        return
-'''
+
 class ServerThread(Thread, conf.conf):
     tcpServer = None
     threads = [] 
@@ -193,6 +182,23 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                         #self.CarStatus.status['light'] = self.statusLight
                         #answer['status'] = self.statusLight
                         CarStatus.statusCar['car']['light'] = self.statusLight
+                elif cmd['cmd'] == 'speed':
+                    speed = cmd['x']
+                    if speed == 0 :
+                        self.moveStop()
+                    elif speed > 0 : # Вперед
+                        self.moveForward(speed)
+                    elif speed < 0 : # Назад
+                        self.moveBack(speed)
+                elif cmd['cmd'] == 'turn':
+                    turn = cmd['y']
+                    if turn == 0 :
+                        self.turnCenter()
+                    elif turn > 0 : # Право
+                        self.turnRight(turn)
+                    elif turn < 0 : # Лево
+                        self.turnLeft(turn)
+                '''
                 # Движение вперед. Полное 1
                 elif cmd['cmd'] == 'X':
                     print(cmd)
@@ -221,15 +227,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                         self.moveBack(cmd['val'])
                     else :
                         self.moveStop()
-                elif cmd['cmd'] == 'turn':
-                    turn = cmd['y']
-                    if turn == 0 :
-                        self.turnCenter()
-                    elif turn > 0 : # Право
-                        self.turnRight(turn)
-                    elif turn < 0 : # Лево
-                        self.turnLeft(turn)
-                
+                '''
                 answer['state'] = CarStatus.statusCar['car']
                 self.conn.send(json.dumps(answer, ensure_ascii=False).encode())
 

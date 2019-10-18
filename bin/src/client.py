@@ -330,8 +330,8 @@ class Remote(conf.conf):
         player = VideoWindow()
         player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
         
-        player.show()
-        #player.showFullScreen()
+        #player.show()
+        player.showFullScreen()
         
         player.setCursor(Qt.BlankCursor)
         

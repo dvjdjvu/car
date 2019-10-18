@@ -67,10 +67,13 @@ class Joystick(QThread, HardwareSetting):
             else :
                 SX = -1 * (HardwareSetting.xZero - SX)
             
+            # Джойстик стоит задом на перед.
             if SY > HardwareSetting.yZero :
                 SY = SY - HardwareSetting.yZero
             else :
                 SY = -1 * (HardwareSetting.yZero - SY)
+            
+            SY = -1 * SY
             
             if (abs(SX) < self.deltaMax) :
                 SX = 0
@@ -80,17 +83,18 @@ class Joystick(QThread, HardwareSetting):
             if (abs(self.sx - SX) >= self.deltaMin or abs(self.sy - SY) >= self.deltaMin) :
                 #print(round(X, 1), round(Y, 1))
                 #print('x {} y {}'.format(round(X), round(Y)))
-                self.sendCmd('speed', round(SX), round(SY))
+                # Джойстик стоит осями вверх ногами.
+                self.sendCmd('speed', SY/100.0, SX/100.0)
             
             self.sx = SX
             self.sy = SY
             
             time.sleep(0.005)
         
-    def sendCmd(self, cmd, x, y):
+    def sendCmd(self, _cmd, x, y):
         cmd = {}
         cmd['type'] = 'remote'
-        cmd['cmd'] = cmd
+        cmd['cmd'] = _cmd
         cmd['x'] = x
         cmd['y'] = y
         

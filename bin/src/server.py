@@ -189,7 +189,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                     elif speed > 0 : # Вперед
                         self.moveForward(speed)
                     elif speed < 0 : # Назад
-                        self.moveBack(speed)
+                        self.moveBack(-1 * speed)
                 elif cmd['cmd'] == 'turn':
                     turn = cmd['y']
                     if turn == 0 :

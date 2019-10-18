@@ -84,8 +84,8 @@ class VideoWindow(QMainWindow, conf.conf):
         self.labelWifiStatus.raise_()
         self.displayPrint("wifi-")
         
-        self.mediaPlayer.setMedia(QMediaContent(QUrl("http://{}:{}/?action=stream".format(conf.conf.ServerIP, conf.conf.videoServerPort))))
-        self.mediaPlayer.play()
+        #self.mediaPlayer.setMedia(QMediaContent(QUrl("http://{}:{}/?action=stream".format(conf.conf.ServerIP, conf.conf.videoServerPort))))
+        #self.mediaPlayer.play()
         
         self.timerVideoRecconect.timeout.connect(self.videoReconnect)
 
@@ -235,6 +235,10 @@ class ClientThread(QThread, conf.conf):
     
     def __init__(self, parent = None): 
         QThread.__init__(self, parent) 
+        
+    def __del__(self):
+        if self.tcpClient :
+            self.tcpClient.close()
   
     def getSocket(self):
         return self.tcpClient
@@ -247,7 +251,7 @@ class ClientThread(QThread, conf.conf):
             #if not carStatus.statusRemote['network']['wifi'] :
             #    time.sleep(1.0)
             #    continue
-            #print('connect self.tcpClient')
+            print('connect self.tcpClient')
             
             try :
                 tcpClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -258,6 +262,8 @@ class ClientThread(QThread, conf.conf):
                 
                 self.tcpClient = tcpClient
             except socket.error as e:
+                print('EXEPT', e)
+                
                 self.signalDisplayPrint.emit("У-")
                 carStatus.statusRemote['network']['control'] = False
                 
@@ -266,7 +272,7 @@ class ClientThread(QThread, conf.conf):
                 
                 continue        
             
-            #print('Ok self.tcpClient', self.tcpClient)
+            print('Ok self.tcpClient', self.tcpClient)
             if self.tcpClient :
                 self.tcpClient.settimeout(None)
             
@@ -277,7 +283,9 @@ class ClientThread(QThread, conf.conf):
                     if data == '' :
                         self.signalDisplayPrint.emit("У-")
                         carStatus.statusRemote['network']['control'] = False
-                        self.tcpClient.close() 
+                        
+                        if self.tcpClient :
+                            self.tcpClient.close() 
                         self.tcpClient = None
                         
                         break
@@ -287,19 +295,23 @@ class ClientThread(QThread, conf.conf):
                     self.signalDisplayPrint.emit("У+")
                     carStatus.statusRemote['network']['control'] = True
                 except :
-                    self.tcpClient.close() 
+                    if self.tcpClient :
+                        self.tcpClient.close()
                     self.tcpClient = None
+                    
                     self.signalDisplayPrint.emit("У-")
                     carStatus.statusRemote['network']['control'] = False
                     break
                 
             print('Fail self.tcpClient', self.tcpClient)
 
-        self.tcpClient.close()
+        if self.tcpClient :
+            self.tcpClient.close()
         self.tcpClient = None
         
     def sendCmd(self, cmd):        
         print('Send data: ', cmd)
+        #print("sendCmd self.tcpClient", self.tcpClient)
         
         if self.tcpClient :
             self.mutex.lock()
@@ -308,9 +320,11 @@ class ClientThread(QThread, conf.conf):
                 self.tcpClient.send(json.dumps(cmd, ensure_ascii=False).encode())
                 self.signalDisplayPrint.emit("У+")
                 carStatus.statusRemote['network']['control'] = True
-            except:
-                print("error", self.tcpClient)
-                self.tcpClient.close()
+            except Exception as e:
+                #print("error sendCmd", self.tcpClient)
+                print("error e", e)
+                if self.tcpClient :
+                    self.tcpClient.close()
                 self.tcpClient = None
                 
                 self.signalDisplayPrint.emit("У-")
@@ -330,8 +344,8 @@ class Remote(conf.conf):
         player = VideoWindow()
         player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
         
-        #player.show()
-        player.showFullScreen()
+        player.show()
+        #player.showFullScreen()
         
         player.setCursor(Qt.BlankCursor)
         

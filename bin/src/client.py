@@ -84,8 +84,8 @@ class VideoWindow(QMainWindow, conf.conf):
         self.labelWifiStatus.raise_()
         self.displayPrint("wifi-")
         
-        #self.mediaPlayer.setMedia(QMediaContent(QUrl("http://{}:{}/?action=stream".format(conf.conf.ServerIP, conf.conf.videoServerPort))))
-        #self.mediaPlayer.play()
+        self.mediaPlayer.setMedia(QMediaContent(QUrl("http://{}:{}/?action=stream".format(conf.conf.ServerIP, conf.conf.videoServerPort))))
+        self.mediaPlayer.play()
         
         self.timerVideoRecconect.timeout.connect(self.videoReconnect)
 
@@ -344,8 +344,8 @@ class Remote(conf.conf):
         player = VideoWindow()
         player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
         
-        player.show()
-        #player.showFullScreen()
+        #player.show()
+        player.showFullScreen()
         
         player.setCursor(Qt.BlankCursor)
         

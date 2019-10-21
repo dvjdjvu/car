@@ -187,9 +187,9 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                     if speed == 0 :
                         self.moveStop()
                     elif speed > 0 : # Вперед
-                        self.moveForward(speed)
+                        self.moveForward(speed * 0.8 + 0.2)
                     elif speed < 0 : # Назад
-                        self.moveBack(-1 * speed)
+                        self.moveBack(-1 * speed * 0.8 + 0.2)
                 elif cmd['cmd'] == 'turn':
                     turn = cmd['y']
                     if turn == 0 :
@@ -198,36 +198,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                         self.turnRight(turn)
                     elif turn < 0 : # Лево
                         self.turnLeft(turn)
-                '''
-                # Движение вперед. Полное 1
-                elif cmd['cmd'] == 'X':
-                    print(cmd)
-                    if cmd['status'] == True :
-                        self.moveForward(cmd['val'])
-                    else :
-                        self.moveStop()
-                # Движение вперед. Частичное 0.5
-                elif cmd['cmd'] == 'Y':
-                    print(cmd)
-                    if cmd['status'] == True :
-                        self.moveForward(cmd['val'])
-                    else :
-                        self.moveStop()
-                # Движение вперед. Частичное 0.75
-                elif cmd['cmd'] == 'A':
-                    print(cmd)
-                    if cmd['status'] == True :
-                        self.moveForward(cmd['val'])
-                    else :
-                        self.moveStop()
-                # Движение назад. Частичное 0.66
-                elif cmd['cmd'] == 'B':
-                    print(cmd)
-                    if cmd['status'] == True :
-                        self.moveBack(cmd['val'])
-                    else :
-                        self.moveStop()
-                '''
+                        
                 answer['state'] = CarStatus.statusCar['car']
                 self.conn.send(json.dumps(answer, ensure_ascii=False).encode())
 

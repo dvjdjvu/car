@@ -94,7 +94,7 @@ class PWM_L298N_Motor:
         self.pwm.set_pwm(self.in2, 0, self.HIGH)
         self.pwm.set_pwm(self.in3, 0, self.HIGH)        
     
-    def setFreq(self, freq = 8000):
+    def setFreq(self, freq = 50):
         """
         Частота ШИМ.
         

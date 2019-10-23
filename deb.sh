@@ -27,6 +27,9 @@ mkdir -p $PATH_REMOTE/bin/
 mkdir -p $PATH_REMOTE/bin/src/
 mkdir -p $PATH_REMOTE/conf/
 
+cp -r --parents bin/status.sh $PATH_CAR/
+cp -r --parents bin/start.sh $PATH_CAR/
+cp -r --parents bin/stop.sh $PATH_CAR/
 cp -r --parents bin/car.* $PATH_CAR/
 cp -r --parents bin/src/*.py $PATH_CAR/
 cp -r --parents conf/*.default $PATH_CAR/

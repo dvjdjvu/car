@@ -35,4 +35,4 @@ class WifiCheck(QThread):
             
             
     def sendStatus(self, status):        
-        self.signalSendStatus.emit(status)    
+        self.signalSendStatus.emit(status)

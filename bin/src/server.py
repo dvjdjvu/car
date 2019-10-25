@@ -23,6 +23,8 @@ from HardwareSetting import HardwareSetting
 
 from CarStatus import * 
 
+import tickEvent
+
 class ServerThread(Thread, conf.conf):
     tcpServer = None
     threads = [] 
@@ -63,10 +65,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         self.conn = conn
         self.ip = ip 
         self.port = port 
-        print("[+] New server socket thread started for " + ip + ":" + str(port))      
-        
-        # Класс состояния машинки.
-        #self.CarStatus = CarStatus()
+        print("[+] Новое подключение " + ip + ":" + str(port))      
         
         GPIO.cleanup() 
         # Инициализация пинов
@@ -93,6 +92,9 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         self.L298_ENB = 11
         self.pwm_motor = PWM.PWM_L298N_Motor(self.L298_ENA, self.L298_IN1, self.L298_IN2, self.L298_IN3, self.L298_IN4, self.L298_ENB)
         self.pwm_motor.setFreq()
+        
+        # Управление через tickEvent
+        self.TE = tickEvent.tickEvent()
 
     def __del__(self):
         GPIO.output(self.gpioLight, GPIO.LOW)
@@ -114,9 +116,9 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         CarStatus.statusCar['car']['speed'] = speed
         
     def moveBack(self, speed):        
-        self.pwm_motor.back(speed)
+        self.pwm_motor.back(-1 * speed)
         #self.CarStatus.status['move'] = speed
-        CarStatus.statusCar['car']['speed'] = -1 * speed
+        CarStatus.statusCar['car']['speed'] = speed
         
     def turnCenter(self):
         val = int(HardwareSetting._turnCenter)
@@ -179,17 +181,15 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                         
                         self.statusLight = not self.statusLight
                         
-                        #self.CarStatus.status['light'] = self.statusLight
-                        #answer['status'] = self.statusLight
                         CarStatus.statusCar['car']['light'] = self.statusLight
                 elif cmd['cmd'] == 'speed':
                     speed = cmd['x']
                     if speed == 0 :
                         self.moveStop()
                     elif speed > 0 : # Вперед
-                        self.moveForward(speed * 0.8 + 0.2)
+                        self.moveForward(speed * 0.85 + 0.15)
                     elif speed < 0 : # Назад
-                        self.moveBack(-1 * speed * 0.8 + 0.2)
+                        self.moveBack(speed * 0.85 + 0.15)
                 elif cmd['cmd'] == 'turn':
                     turn = cmd['y']
                     if turn == 0 :
@@ -201,9 +201,10 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                         
                 answer['state'] = CarStatus.statusCar['car']
                 self.conn.send(json.dumps(answer, ensure_ascii=False).encode())
-
-    def handler(self):
-        pass
+            
+            # Т.к. не в цикле, то мы избавляемся от флуда команд. 
+            # Будет передано последнее актуальное состояние.
+            self.TE.signalSendStatus.emit(CarStatus.statusCar)
 
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, service_shutdown)

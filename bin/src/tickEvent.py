@@ -2,8 +2,11 @@
 #-*- coding: utf-8 -*-
 
 from threading import Timer
+from PyQt5.QtCore import QThread, pyqtSignal
 
-class tickEvent():
+from CarStatus import *
+
+class tickEvent(QThread):
     """
     Класс управления машиной.
     Для управления будет использоваться 2-ва состояния, фактическое и пользовательское.
@@ -18,6 +21,12 @@ class tickEvent():
     Система управления будет сделана на таймере. 
     На каждом новом тике фактическое состояние будет плавно доводиться до пользовательского.
     """
+    
+    signalSendStatus = pyqtSignal(object)
+    signalSendStatus.connect(self.newStatus)
+    
+    statusActual = CarStatus().statusCar
+    statusUser   = CarStatus().statusCar
     
     def __init__(self, time = 2):
         """
@@ -42,7 +51,20 @@ class tickEvent():
         self.timer.start()
 
     def update(self):
-        print("Hello World")
+
+        if statusActual['car']['speed'] != statusUser['car']['speed'] :
+            pass
+        
+        self.start()
+        
+    def newStatus(self, status):
+        self.statusUser = status
+        
+        if statusActual['car']['turn'] != statusUser['car']['turn'] :
+            statusActual['car']['turn'] = statusUser['car']['turn']
+        
+        if statusActual['car']['light'] != statusUser['car']['light'] :
+            statusActual['car']['light'] = statusUser['car']['light']
         
         self.start()
 

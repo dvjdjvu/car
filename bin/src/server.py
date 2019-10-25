@@ -67,81 +67,11 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         self.port = port 
         print("[+] Новое подключение " + ip + ":" + str(port))      
         
-        GPIO.cleanup() 
-        # Инициализация пинов
-        GPIO.setmode(GPIO.BCM)
-        
-        self.statusLight = False
-        
-        self.gpioLight = 17
-        #wiringpi.pinMode(self.gpioLight, wiringpi.GPIO.PWM_OUTPUT)
-        GPIO.setup(self.gpioLight, GPIO.OUT)
-        GPIO.output(self.gpioLight, GPIO.LOW)
-        
-        # Управление сервоприводом поворота колес.
-        self.SERVO = 7
-        self.pwm_servo = PWM.PWM_Servo(self.SERVO)
-        self.pwm_servo.setFreq()
-        
-        # Управление L298, мотор движения машинки.
-        self.L298_ENA = 10
-        self.L298_IN1 = 12
-        self.L298_IN2 = 13
-        self.L298_IN3 = 14
-        self.L298_IN4 = 15        
-        self.L298_ENB = 11
-        self.pwm_motor = PWM.PWM_L298N_Motor(self.L298_ENA, self.L298_IN1, self.L298_IN2, self.L298_IN3, self.L298_IN4, self.L298_ENB)
-        self.pwm_motor.setFreq()
-        
         # Управление через tickEvent
         self.TE = tickEvent.tickEvent()
 
     def __del__(self):
-        GPIO.output(self.gpioLight, GPIO.LOW)
-        
-        self.moveStop()
-        self.turnCenter()
-        
-        GPIO.cleanup()
-
-    def moveStop(self):
-        self.pwm_motor.stop()
-        #self.CarStatus.status['move'] = 0
-        CarStatus.statusCar['car']['speed'] = 0
-        
-    def moveForward(self, speed):
-        #print('val', val)
-        self.pwm_motor.forward(speed)
-        #self.CarStatus.status['move'] = speed
-        CarStatus.statusCar['car']['speed'] = speed
-        
-    def moveBack(self, speed):        
-        self.pwm_motor.back(-1 * speed)
-        #self.CarStatus.status['move'] = speed
-        CarStatus.statusCar['car']['speed'] = speed
-        
-    def turnCenter(self):
-        val = int(HardwareSetting._turnCenter)
-        #print('turnCenter {}', val)
-        self.pwm_servo.set(val)
-        #self.CarStatus.status['turn'] = val
-        CarStatus.statusCar['car']['turn'] = val
-        
-    def turnLeft(self, turn):
-        #print('turnLeft {}', turn)
-        val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
-        #print('turnLeft {}', val)
-        self.pwm_servo.set(val)
-        #self.CarStatus.status['turn'] = val
-        CarStatus.statusCar['car']['turn'] = val
-        
-    def turnRight(self, turn):
-        #print('turnRight {}', turn)
-        val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
-        #print('turnRight {}', val)
-        self.pwm_servo.set(val)
-        #self.CarStatus.status['turn'] = val
-        CarStatus.statusCar['car']['turn'] = val
+        pass
 
     def run(self): 
         while True : 
@@ -171,33 +101,16 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                 # Свет.
                 if cmd['cmd'] == 'Start':
                     print(cmd)
-                    if cmd['status'] == True :
-                        if self.statusLight == False :
-                            # Включить свет.
-                            GPIO.output(self.gpioLight, GPIO.HIGH)
-                        else :
-                            # Выключить свет.
-                            GPIO.output(self.gpioLight, GPIO.LOW)
-                        
+                    if cmd['status'] == True :                        
                         self.statusLight = not self.statusLight
                         
                         CarStatus.statusCar['car']['light'] = self.statusLight
                 elif cmd['cmd'] == 'speed':
                     speed = cmd['x']
-                    if speed == 0 :
-                        self.moveStop()
-                    elif speed > 0 : # Вперед
-                        self.moveForward(speed * 0.85 + 0.15)
-                    elif speed < 0 : # Назад
-                        self.moveBack(speed * 0.85 + 0.15)
+                    CarStatus.statusCar['car']['speed'] = speed
                 elif cmd['cmd'] == 'turn':
                     turn = cmd['y']
-                    if turn == 0 :
-                        self.turnCenter()
-                    elif turn > 0 : # Право
-                        self.turnRight(turn)
-                    elif turn < 0 : # Лево
-                        self.turnLeft(turn)
+                    CarStatus.statusCar['car']['turn'] = turn
                         
                 answer['state'] = CarStatus.statusCar['car']
                 self.conn.send(json.dumps(answer, ensure_ascii=False).encode())

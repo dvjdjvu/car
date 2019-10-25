@@ -6,6 +6,8 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from CarStatus import *
 
+import HardwareControl
+
 class tickEvent(QThread):
     """
     Класс управления машиной.
@@ -27,6 +29,8 @@ class tickEvent(QThread):
     
     statusActual = CarStatus().statusCar
     statusUser   = CarStatus().statusCar
+    
+    HC = HardwareControl.HardwareControl()
     
     def __init__(self, time = 2):
         """
@@ -51,9 +55,18 @@ class tickEvent(QThread):
         self.timer.start()
 
     def update(self):
-
+        """
+        Пока что эта функция отвечает только за обработку скорости и направления
+        движения.
+        """
+        
         if statusActual['car']['speed'] != statusUser['car']['speed'] :
-            pass
+            if statusActual['car']['speed'] == 0 :
+                HC.moveStop()
+            elif statusActual['car']['speed'] > 0 : # Вперед
+                HC.moveForward(speed * 0.85 + 0.15)
+            elif statusActual['car']['speed'] < 0 : # Назад
+                HC.moveBack(speed * 0.85 + 0.15)
         
         self.start()
         
@@ -62,9 +75,18 @@ class tickEvent(QThread):
         
         if statusActual['car']['turn'] != statusUser['car']['turn'] :
             statusActual['car']['turn'] = statusUser['car']['turn']
-        
+            
+            if statusActual['car']['turn'] == 0 : # Колеса ровно
+                HC.turnCenter()
+            elif statusActual['car']['turn'] > 0 : # Право
+                HC.turnRight(turn)
+            elif statusActual['car']['turn'] < 0 : # Лево
+                HC.turnLeft(turn)
+            
         if statusActual['car']['light'] != statusUser['car']['light'] :
             statusActual['car']['light'] = statusUser['car']['light']
+            
+            HC.lightSet(statusActual['car']['light'])
         
         self.start()
 

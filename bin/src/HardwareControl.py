@@ -47,11 +47,18 @@ class HardwareControl():
         
         GPIO.cleanup()
 
+    def lightSet(self, light):
+        if light == False :
+            # Включить свет.
+            GPIO.output(self.gpioLight, GPIO.HIGH)
+        else :
+            # Выключить свет.
+            GPIO.output(self.gpioLight, GPIO.LOW)
+
     def moveStop(self):
         self.pwm_motor.stop()
         
     def moveForward(self, speed):
-        #print('val', val)
         self.pwm_motor.forward(speed)
         
     def moveBack(self, speed):        
@@ -59,17 +66,12 @@ class HardwareControl():
         
     def turnCenter(self):
         val = int(HardwareSetting._turnCenter)
-        #print('turnCenter {}', val)
         self.pwm_servo.set(val)
         
     def turnLeft(self, turn):
-        #print('turnLeft {}', turn)
         val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
-        #print('turnLeft {}', val)
         self.pwm_servo.set(val)
         
     def turnRight(self, turn):
-        #print('turnRight {}', turn)
         val = int(HardwareSetting._turnCenter + (-1 * turn * HardwareSetting._turnDelta / HardwareSetting.yZero))
-        #print('turnRight {}', val)
         self.pwm_servo.set(val)

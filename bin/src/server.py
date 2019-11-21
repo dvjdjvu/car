@@ -3,7 +3,6 @@
 # Server is stay in GAZ-66.
 
 import time
-import wiringpi
 
 import sys, time
 import socket

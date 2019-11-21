@@ -1,0 +1,5 @@
+PyQt5>=5.13.2
+Adafruit-ADS1x15>=1.0.2
+Adafruit-PCA9685>=1.0.1
+RPi.GPIO>=0.7.0
+picamera>=1.13

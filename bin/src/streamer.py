@@ -8,7 +8,6 @@ from PyQt5.QtCore import QThread
 import io
 import os
 import picamera
-import logging
 import socketserver
 from threading import Condition
 from http import server

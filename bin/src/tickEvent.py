@@ -104,9 +104,9 @@ class tickEvent(Thread):
         self.start()
         
     def newStatus(self, status):
-        print("TC newStatus")
-        print("self.statusUser", id(status))
-        print("self.statusActual", id(self.statusActual))
+        #print("TC newStatus")
+        #print("self.statusUser", id(status))
+        #print("self.statusActual", id(self.statusActual))
         
         """
         server.py послылает в newStatus сигнал содержащий пользовательское состояние управления(состоние пульта управления)
@@ -127,18 +127,18 @@ class tickEvent(Thread):
             if self.statusActual['car']['turn'] == 0: # Колеса ровно
                 self.HC.turnCenter()
             elif self.statusActual['car']['turn'] > 0: # Право
-                self.HC.turnRight(turn)
+                self.HC.turnRight(self.statusActual['car']['turn'])
             elif self.statusActual['car']['turn'] < 0: # Лево
-                self.HC.turnLeft(turn)
+                self.HC.turnLeft(self.statusActual['car']['turn'])
             
         # Включение и выключение фар так же можно делать в режиме реального времени.
         #print("self.statusActual['car']['light'] != self.statusUser['car']['light']", self.statusActual['car']['light'], self.statusUser['car']['light'])
         if self.statusActual['car']['light'] != self.statusUser['car']['light']:
             self.statusActual['car']['light'] = self.statusUser['car']['light']
             
-            self.HC.lightSet(statusActual['car']['light'])
+            self.HC.lightSet(self.statusActual['car']['light'])
             
-            print("light change");
+            #print("light change");
         
         #self.start()
 

@@ -95,27 +95,27 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
             
                 answer = {}
                 answer['type'] = 'car'
-                answer['cmd'] = cmd['cmd']            
+                answer['cmd'] = cmd['cmd']
             
                 # Свет.
                 if cmd['cmd'] == 'Start':
                     #print(cmd)
                     if cmd['status'] == True :                        
-                        CarStatus.statusCar['car']['light'] = not CarStatus.statusCar['car']['light']
+                        carStatus.statusCar['car']['light'] = not carStatus.statusCar['car']['light']
                 elif cmd['cmd'] == 'speed':
                     speed = cmd['x']
-                    CarStatus.statusCar['car']['speed'] = speed
+                    carStatus.statusCar['car']['speed'] = speed
                 elif cmd['cmd'] == 'turn':
                     turn = cmd['y']
-                    CarStatus.statusCar['car']['turn'] = turn
+                    carStatus.statusCar['car']['turn'] = turn
                         
-                answer['state'] = CarStatus.statusCar['car']
+                answer['state'] = carStatus.statusCar['car']
                 self.conn.send(json.dumps(answer, ensure_ascii=False).encode())
             
             # Т.к. не в цикле, то мы избавляемся от флуда команд. 
             # Будет передано последнее актуальное состояние.
-            print(CarStatus.statusCar)
-            self.TE.newStatus(CarStatus.statusCar)
+            print(carStatus.statusCar)
+            self.TE.newStatus(carStatus.statusCar)
 
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, service_shutdown)

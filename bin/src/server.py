@@ -99,11 +99,9 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
             
                 # Свет.
                 if cmd['cmd'] == 'Start':
-                    print(cmd)
+                    #print(cmd)
                     if cmd['status'] == True :                        
-                        self.statusLight = not self.statusLight
-                        
-                        CarStatus.statusCar['car']['light'] = self.statusLight
+                        CarStatus.statusCar['car']['light'] = not CarStatus.statusCar['car']['light']
                 elif cmd['cmd'] == 'speed':
                     speed = cmd['x']
                     CarStatus.statusCar['car']['speed'] = speed
@@ -116,7 +114,8 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
             
             # Т.к. не в цикле, то мы избавляемся от флуда команд. 
             # Будет передано последнее актуальное состояние.
-            self.TE.signalSendStatus.emit(CarStatus.statusCar)
+            print(CarStatus.statusCar)
+            self.TE.newStatus(CarStatus.statusCar)
 
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, service_shutdown)

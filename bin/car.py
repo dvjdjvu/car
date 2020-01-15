@@ -29,7 +29,7 @@ def ProcessingInit(conf):
     Args:
             conf:   (class(conf)) Конфигурация.
     """
-        
+    
     # Обработка команд.
     serverThread = server.ServerThread()
     serverThread.start()

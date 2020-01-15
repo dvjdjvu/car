@@ -3,11 +3,9 @@
 
 from CarStatus import *
 import HardwareControl
-from PyQt5.QtCore import QThread
-from PyQt5.QtCore import pyqtSignal
-from threading import Timer
+from threading import Thread, Lock, Timer
 
-class tickEvent(QThread):
+class tickEvent(Thread):
     """
     Класс управления машиной.
     Для управления будет использоваться 2-ва состояния, фактическое и пользовательское.
@@ -23,18 +21,6 @@ class tickEvent(QThread):
     На каждом новом тике фактическое состояние будет пошагово доводиться до пользовательского.
     """
     
-    signalSendStatus = pyqtSignal(object)
-    signalSendStatus.connect(self.newStatus)
-    
-    statusActual = CarStatus().statusCar
-    statusUser   = CarStatus().statusCar
-    
-    HC = HardwareControl.HardwareControl()
-    
-    # шаг плавности изменения хода
-    step = 0.10
-    stepStart = 0.15
-    
     def __init__(self, time=2):
         """
         Инициализация
@@ -42,6 +28,17 @@ class tickEvent(QThread):
         Args:
             time: Время между тиками в миллисекундах.
         """
+        
+        self.mutex = Lock()
+        
+        self.statusActual = CarStatus().statusCar
+        self.statusUser   = CarStatus().statusCar
+    
+        self.HC = HardwareControl.HardwareControl()
+    
+        # шаг плавности изменения хода
+        self.step = 0.10
+        self.stepStart = 0.15
         
         self.time = time
         
@@ -51,7 +48,7 @@ class tickEvent(QThread):
         """
         Деструктор
         """
-        self.timer.cancel()
+        #self.timer.cancel()
 
     def start(self):
         self.timer = Timer(self.time, self.update)
@@ -64,9 +61,14 @@ class tickEvent(QThread):
         движения.
         """
         
-        sA = statusActual['car']['speed']
-        sU = statusUser['car']['speed']
+        # Блокировка на получение данных
+        self.mutex.acquire()
+        
+        sA = self.statusActual['car']['speed']
+        sU = self.statusUser['car']['speed']
         delta = sU - sA
+        
+        self.mutex.release()
         
         step = self.step
         if delta < self.step:
@@ -75,20 +77,20 @@ class tickEvent(QThread):
         if sA < sU:
             sA += step
             if sA == 0:
-                HC.moveStop()
+                self.HC.moveStop()
             elif sA < 0.0:
-                HC.moveBack(sA * (1 - self.stepStart) + self.stepStart)
+                self.HC.moveBack(sA * (1 - self.stepStart) + self.stepStart)
             elif sA > 0.0:
-                HC.moveForward(sA * (1 - self.stepStart) + self.stepStart)
+                self.HC.moveForward(sA * (1 - self.stepStart) + self.stepStart)
                 
         if sA > sU:
             sA -= step
             if sA == 0:
-                HC.moveStop()
+                self.HC.moveStop()
             elif sA < 0.0:
-                HC.moveBack(sA * (1 - self.stepStart) + self.stepStart)
+                self.HC.moveBack(sA * (1 - self.stepStart) + self.stepStart)
             elif sA > 0.0:
-                HC.moveForward(sA * (1 - self.stepStart) + self.stepStart)
+                self.HC.moveForward(sA * (1 - self.stepStart) + self.stepStart)
             
             #if sA == 0 :
             #    HC.moveStop()        
@@ -97,35 +99,48 @@ class tickEvent(QThread):
             #elif sA < 0 : # Назад
             #    HC.moveBack(speed * (1 - self.stepStart) + self.stepStart)
         
-        statusActual['car']['speed'] = sA
+        self.statusActual['car']['speed'] = sA
         
         self.start()
         
     def newStatus(self, status):
+        print("TC newStatus")
+        print("self.statusUser", id(status))
+        print("self.statusActual", id(self.statusActual))
+        
         """
         server.py послылает в newStatus сигнал содержащий пользовательское состояние управления(состоние пульта управления)
         """
+        
+        # Блокировка на обновлении данных
+        self.mutex.acquire()
+        
         self.statusUser = status
+        
+        self.mutex.release()
         
         # Поворот колес обрабатывается моментально т.к. сервопривод имеет механические задержки в работе.
         # За счет чего достигается плавность поворота колес.
-        if statusActual['car']['turn'] != statusUser['car']['turn']:
-            statusActual['car']['turn'] = statusUser['car']['turn']
+        if self.statusActual['car']['turn'] != self.statusUser['car']['turn']:
+            self.statusActual['car']['turn'] = self.statusUser['car']['turn']
             
-            if statusActual['car']['turn'] == 0: # Колеса ровно
-                HC.turnCenter()
-            elif statusActual['car']['turn'] > 0: # Право
-                HC.turnRight(turn)
-            elif statusActual['car']['turn'] < 0: # Лево
-                HC.turnLeft(turn)
+            if self.statusActual['car']['turn'] == 0: # Колеса ровно
+                self.HC.turnCenter()
+            elif self.statusActual['car']['turn'] > 0: # Право
+                self.HC.turnRight(turn)
+            elif self.statusActual['car']['turn'] < 0: # Лево
+                self.HC.turnLeft(turn)
             
         # Включение и выключение фар так же можно делать в режиме реального времени.
-        if statusActual['car']['light'] != statusUser['car']['light']:
-            statusActual['car']['light'] = statusUser['car']['light']
+        #print("self.statusActual['car']['light'] != self.statusUser['car']['light']", self.statusActual['car']['light'], self.statusUser['car']['light'])
+        if self.statusActual['car']['light'] != self.statusUser['car']['light']:
+            self.statusActual['car']['light'] = self.statusUser['car']['light']
             
-            HC.lightSet(statusActual['car']['light'])
+            self.HC.lightSet(statusActual['car']['light'])
+            
+            print("light change");
         
-        self.start()
+        #self.start()
 
 if __name__ == "__main__":
 

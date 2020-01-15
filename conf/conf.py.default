@@ -4,21 +4,22 @@
 
 class conf :
     
-    Type = "server" # "server"/"client"
+    def __init__(self):
+        self.Type = "server" # "server"/"client"
     
-    VideoServerType = 'm' # 'p'
-    VideoUrl = "http://192.168.2.71:8000/?action=stream"
+        self.VideoServerType = 'm' # 'p'
+        self.VideoUrl = "http://192.168.2.71:8000/?action=stream"
     
-    ServerIP = "192.168.2.71"
-    videoServerPort = 8000
-    controlServerPort = 8001
-    ServerBufferSize = 200
+        self.ServerIP = "192.168.2.71"
+        self.videoServerPort = 8000
+        self.controlServerPort = 8001
+        self.ServerBufferSize = 200
     
-    # Video settings
-    VideoRate = 25
-    VideoWidth = 640
-    VideoHeight = 480
+        # Video settings
+        self.VideoRate = 25
+        self.VideoWidth = 640
+        self.VideoHeight = 480
     
-    timeRecconect = 3
+        self.timeRecconect = 3
     
     

@@ -21,7 +21,7 @@ class tickEvent(Thread):
     На каждом новом тике фактическое состояние будет пошагово доводиться до пользовательского.
     """
     
-    def __init__(self, time=2):
+    def __init__(self, time=0.1):
         """
         Инициализация
         
@@ -33,6 +33,8 @@ class tickEvent(Thread):
         
         self.statusActual = CarStatus().statusCar
         self.statusUser   = CarStatus().statusCar
+        # Что бы фары включались после 1-ого нажатия кнопки
+        self.statusActual['car']['light'] = not self.statusUser['car']['light']
     
         self.HC = HardwareControl.HardwareControl()
     

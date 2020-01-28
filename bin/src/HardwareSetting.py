@@ -2,17 +2,12 @@
 #-*- coding: utf-8 -*-
 
 class HardwareSetting:
-    # Максимальные углы поворота колес. Значения сервопривода.
-    #_turnCenter = 150
-    #_turnLeft   = 195
-    #_turnRight  = 105
-    #_turnDelta  = 40
-    
+    # Максимальные углы поворота колес. Значения сервопривода.    
     _turnCenter = 307
-    _turnLeft   = 369
-    _turnRight  = 245
-    _turnDelta  = 62    
-        
+    _turnDelta  = 62
+    _turnLeft   = _turnCenter + _turnDelta
+    _turnRight  = _turnCenter - _turnDelta
+    
     # Отклонение по X имеет значение от 0 до 100
     xZero = 100
     # Отклонение по Y(поворот колес) имеет значение от 0 до 100

@@ -39,8 +39,8 @@ class tickEvent(Thread):
         self.HC = HardwareControl.HardwareControl()
     
         # шаг плавности изменения хода
-        self.step = 0.10
-        self.stepStart = 0.15
+        self.step = 0.05
+        self.stepStart = 0.2
         
         self.time = time
         
@@ -68,13 +68,17 @@ class tickEvent(Thread):
         
         sA = self.statusActual['car']['speed']
         sU = self.statusUser['car']['speed']
+        
+        if abs(sA) < self.step :
+            sA = 0
+        
         delta = sU - sA
         
         self.mutex.release()
         
         step = self.step
-        if delta < self.step:
-            step = delta
+        
+        #print("sA {}\t sU {}\t delta {}\t step {}".format(sA, sU, delta, step))
         
         if sA < sU:
             sA += step
@@ -84,7 +88,7 @@ class tickEvent(Thread):
                 self.HC.moveBack(sA * (1 - self.stepStart) + self.stepStart)
             elif sA > 0.0:
                 self.HC.moveForward(sA * (1 - self.stepStart) + self.stepStart)
-                
+               
         if sA > sU:
             sA -= step
             if sA == 0:
@@ -93,13 +97,9 @@ class tickEvent(Thread):
                 self.HC.moveBack(sA * (1 - self.stepStart) + self.stepStart)
             elif sA > 0.0:
                 self.HC.moveForward(sA * (1 - self.stepStart) + self.stepStart)
-            
-            #if sA == 0 :
-            #    HC.moveStop()        
-            #elif sA > 0 : # Вперед            
-            #    HC.moveForward(speed * (1 - self.stepStart) + self.stepStart)
-            #elif sA < 0 : # Назад
-            #    HC.moveBack(speed * (1 - self.stepStart) + self.stepStart)
+           
+        if sA == 0 :
+            self.HC.moveStop()        
         
         self.statusActual['car']['speed'] = sA
         

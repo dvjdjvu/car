@@ -4,7 +4,7 @@
 class HardwareSetting:
     # Максимальные углы поворота колес. Значения сервопривода.    
     _turnCenter = 307
-    _turnDelta  = 62
+    _turnDelta  = 75
     _turnLeft   = _turnCenter + _turnDelta
     _turnRight  = _turnCenter - _turnDelta
     

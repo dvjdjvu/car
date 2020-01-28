@@ -103,7 +103,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
                     if cmd['status'] == True :                        
                         carStatus.statusCar['car']['light'] = not carStatus.statusCar['car']['light']
                 elif cmd['cmd'] == 'speed':
-                    speed = cmd['x']
+                    speed = -1 * cmd['x']
                     carStatus.statusCar['car']['speed'] = speed
                 elif cmd['cmd'] == 'turn':
                     turn = cmd['y']

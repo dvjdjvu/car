@@ -27,6 +27,7 @@ import tickEvent
 
 class ServerThread(Thread, conf.conf):
     tcpServer = None
+    tcpServerTimeWait = 300
     
     def __init__(self): 
         Thread.__init__(self) 
@@ -43,7 +44,17 @@ class ServerThread(Thread, conf.conf):
 
     def run(self):
         while True:
-            data = self.tcpServer.recv().decode()
+            data = None
+            
+            if self.tcpServer.poll(self.tcpServerTimeWait, zmq.POLLIN):
+                data = self.tcpServer.recv(zmq.NOBLOCK).decode()
+            
+            if data == None :
+                self.TE.newStatus(carStatusDefault.statusCar)
+                
+                continue
+            
+            #data = self.tcpServer.recv().decode()
             
             # Обработка полученных команд.
             #print(data)
@@ -57,8 +68,11 @@ class ServerThread(Thread, conf.conf):
                 except:                
                     continue
                 
+                carStatus.statusCar = cmd
+                self.tcpServer.send_string(json.dumps(cmd, ensure_ascii=False))
+                
                 #print(cmd)
-            
+                '''
                 answer = {}
                 answer['type'] = 'car'
                 answer['cmd'] = cmd['cmd']
@@ -77,7 +91,7 @@ class ServerThread(Thread, conf.conf):
                         
                 answer['state'] = carStatus.statusCar['car']
                 self.tcpServer.send_string(json.dumps(answer, ensure_ascii=False))
-            
+                '''
             # Т.к. не в цикле, то мы избавляемся от флуда команд. 
             # Будет передано последнее актуальное состояние.
             print(carStatus.statusCar)

@@ -259,12 +259,28 @@ class ClientThread(QThread, conf.conf):
             carStatus.statusRemote['network']['control'] = True
             
     def sendCmd(self, cmd):        
-        print('Send data: ', cmd)
+        #print('Send data: ', cmd)
         #print("sendCmd self.tcpClient", self.tcpClient)
+        
+        # Свет.
+        if cmd['cmd'] == 'Start':
+            #print(cmd)
+            if cmd['status'] == True :                        
+                carStatus.statusRemote['car']['light'] = not carStatus.statusRemote['car']['light']
+        elif cmd['cmd'] == 'speed':
+            speed = -1 * cmd['x']
+            carStatus.statusRemote['car']['speed'] = speed
+        elif cmd['cmd'] == 'turn':
+            turn = cmd['y']
+            carStatus.statusRemote['car']['turn'] = turn
         
         self.mutex.lock()
             
-        self.tcpClient.send_string(json.dumps(cmd, ensure_ascii=False))
+        self.tcpClient.send_string(json.dumps(carStatus.statusRemote, ensure_ascii=False))
+            
+        print(carStatus.statusRemote)
+            
+        #self.tcpClient.send_string(json.dumps(cmd, ensure_ascii=False))
         
         '''
         if self.tcpClient.poll(200, zmq.POLLIN):
@@ -296,7 +312,7 @@ class ClientThread(QThread, conf.conf):
         cmd['type'] = 'remote'
         cmd['cmd'] = 'checkConnection'
         
-        self.sendCmd(cmd)
+        self.sendCmd(carStatus.statusRemote)
             
         self.flagCheckConnection = False
             

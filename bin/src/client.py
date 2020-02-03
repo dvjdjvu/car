@@ -280,8 +280,6 @@ class ClientThread(QThread, conf.conf):
             
         print(carStatus.statusRemote)
             
-        #self.tcpClient.send_string(json.dumps(cmd, ensure_ascii=False))
-        
         '''
         if self.tcpClient.poll(200, zmq.POLLIN):
             self.tcpClient.recv(zmq.NOBLOCK).decode()
@@ -294,12 +292,7 @@ class ClientThread(QThread, conf.conf):
 
         self.mutex.unlock()
         
-        #self.flagCheckConnection = False
-        
-        #self.timerCheckConnection.start(100)
-        
     def checkConnection(self):
-        #self.timerCheckConnection.stop()
         
         if self.flagCheckConnection == False :
             self.signalDisplayPrint.emit("У-")
@@ -315,120 +308,6 @@ class ClientThread(QThread, conf.conf):
         self.sendCmd(carStatus.statusRemote)
             
         self.flagCheckConnection = False
-            
-
-'''
-class ClientThread(QThread, conf.conf):
-    
-    tcpClient = None
-    timerServerRecconect = QtCore.QTimer()
-    mutex = QtCore.QMutex()
-    
-    signalDisplayPrint = pyqtSignal(str)
-    
-    def __init__(self, parent = None): 
-        QThread.__init__(self, parent) 
-        
-    def __del__(self):
-        if self.tcpClient :
-            self.tcpClient.close()
-  
-    def getSocket(self):
-        return self.tcpClient
-  
-    def run(self): 
-        
-        while not self.tcpClient:
-            self.tcpClient = None
-            
-            #if not carStatus.statusRemote['network']['wifi'] :
-            #    time.sleep(1.0)
-            #    continue
-            print('connect self.tcpClient')
-            
-            try :
-                tcpClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                tcpClient.settimeout(2.0)
-                tcpClient.connect((conf.conf.ServerIP, conf.conf.controlServerPort))
-                self.signalDisplayPrint.emit("У+")
-                carStatus.statusRemote['network']['control'] = True
-                
-                self.tcpClient = tcpClient
-            except socket.error as e:
-                print('EXEPT', e)
-                
-                self.signalDisplayPrint.emit("У-")
-                carStatus.statusRemote['network']['control'] = False
-                
-                time.sleep(conf.conf.timeRecconect)
-                self.tcpClient = None
-                
-                continue        
-            
-            print('Ok self.tcpClient', self.tcpClient)
-            if self.tcpClient :
-                self.tcpClient.settimeout(None)
-            
-            while True:
-                try :
-                    data = self.tcpClient.recv(conf.conf.ServerBufferSize)
-                    data = data.decode()
-                    if data == '' :
-                        self.signalDisplayPrint.emit("У-")
-                        carStatus.statusRemote['network']['control'] = False
-                        
-                        if self.tcpClient :
-                            self.tcpClient.close() 
-                        self.tcpClient = None
-                        
-                        break
-                    
-                    #print('Get data:  ', data)
-                    
-                    self.signalDisplayPrint.emit("У+")
-                    carStatus.statusRemote['network']['control'] = True
-                except :
-                    if self.tcpClient :
-                        self.tcpClient.close()
-                    self.tcpClient = None
-                    
-                    self.signalDisplayPrint.emit("У-")
-                    carStatus.statusRemote['network']['control'] = False
-                    break
-                
-            print('Fail self.tcpClient', self.tcpClient)
-
-        if self.tcpClient :
-            self.tcpClient.close()
-        self.tcpClient = None
-        
-    def sendCmd(self, cmd):        
-        print('Send data: ', cmd)
-        #print("sendCmd self.tcpClient", self.tcpClient)
-        
-        if self.tcpClient :
-            self.mutex.lock()
-            
-            try:
-                self.tcpClient.send(json.dumps(cmd, ensure_ascii=False).encode())
-                self.signalDisplayPrint.emit("У+")
-                carStatus.statusRemote['network']['control'] = True
-            except Exception as e:
-                #print("error sendCmd", self.tcpClient)
-                print("error e", e)
-                if self.tcpClient :
-                    self.tcpClient.close()
-                self.tcpClient = None
-                
-                self.signalDisplayPrint.emit("У-")
-                carStatus.statusRemote['network']['control'] = False
-
-            self.mutex.unlock()
-        else :
-            print("self.tcpClient", self.tcpClient)
-            self.signalDisplayPrint.emit("У-")
-            carStatus.statusRemote['network']['control'] = False
-'''
 
 class Remote(conf.conf):
     

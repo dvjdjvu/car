@@ -54,8 +54,6 @@ class ServerThread(Thread, conf.conf):
                 
                 continue
             
-            #data = self.tcpServer.recv().decode()
-            
             # Обработка полученных команд.
             #print(data)
             data = data.replace('}{', '}\n\n{')
@@ -72,126 +70,11 @@ class ServerThread(Thread, conf.conf):
                 self.tcpServer.send_string(json.dumps(cmd, ensure_ascii=False))
                 
                 #print(cmd)
-                '''
-                answer = {}
-                answer['type'] = 'car'
-                answer['cmd'] = cmd['cmd']
-            
-                # Свет.
-                if cmd['cmd'] == 'Start':
-                    #print(cmd)
-                    if cmd['status'] == True :                        
-                        carStatus.statusCar['car']['light'] = not carStatus.statusCar['car']['light']
-                elif cmd['cmd'] == 'speed':
-                    speed = -1 * cmd['x']
-                    carStatus.statusCar['car']['speed'] = speed
-                elif cmd['cmd'] == 'turn':
-                    turn = cmd['y']
-                    carStatus.statusCar['car']['turn'] = turn
-                        
-                answer['state'] = carStatus.statusCar['car']
-                self.tcpServer.send_string(json.dumps(answer, ensure_ascii=False))
-                '''
+
             # Т.к. не в цикле, то мы избавляемся от флуда команд. 
             # Будет передано последнее актуальное состояние.
             print(carStatus.statusCar)
             self.TE.newStatus(carStatus.statusCar)
-
-'''
-class ServerThread(Thread, conf.conf):
-    tcpServer = None
-    threads = [] 
-    
-    def __init__(self): 
-        Thread.__init__(self) 
-        
-    def __del__(self):
-        pass
-
-    def run(self):
-        TCP_IP = conf.conf.ServerIP
-        TCP_PORT = conf.conf.controlServerPort
-        BUFFER_SIZE = conf.conf.ServerBufferSize
-        self.tcpServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-        self.tcpServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) 
-        self.tcpServer.bind((TCP_IP, TCP_PORT)) 
-        threads = [] 
-
-        # Максимальное колличество подключений в очереди.
-        self.tcpServer.listen(1)
-        while True:
-            print("Car server up : Waiting for connections from TCP clients...") 
-            (conn, (ip, port)) = self.tcpServer.accept() 
-            newthread = ClientThread(conn, ip, port) 
-            newthread.start() 
-            self.threads.append(newthread)         
-
-    def wait(self):
-        for t in self.threads: 
-            t.join() 
-
-# Класс отвечает за обработку команд пульта управления.
-class ClientThread(Thread, conf.conf, HardwareSetting):    
-    
-    def __init__(self, conn, ip, port): 
-        Thread.__init__(self) 
-        self.conn = conn
-        self.ip = ip 
-        self.port = port 
-        print("[+] Новое подключение " + ip + ":" + str(port))      
-        
-        # Управление через tickEvent
-        self.TE = tickEvent.tickEvent()
-
-    def __del__(self):
-        # Потеря связи или прекращение работы, отключение машинки
-        self.TE.newStatus(carStatusDefault.statusCar)
-
-    def run(self): 
-        while True : 
-            data = self.conn.recv(2048)
-            data = data.decode()
-            if data == '' :
-                break
-            
-            # Обработка полученных команд.
-            #print(data)
-            data = data.replace('}{', '}\n\n{')
-            data = data.split('\n\n')
-            
-            #for i in reversed(data):
-            for i in data:
-                try:
-                    cmd = json.loads(i)
-                except:                
-                    continue
-                
-                #print(cmd)
-            
-                answer = {}
-                answer['type'] = 'car'
-                answer['cmd'] = cmd['cmd']
-            
-                # Свет.
-                if cmd['cmd'] == 'Start':
-                    #print(cmd)
-                    if cmd['status'] == True :                        
-                        carStatus.statusCar['car']['light'] = not carStatus.statusCar['car']['light']
-                elif cmd['cmd'] == 'speed':
-                    speed = -1 * cmd['x']
-                    carStatus.statusCar['car']['speed'] = speed
-                elif cmd['cmd'] == 'turn':
-                    turn = cmd['y']
-                    carStatus.statusCar['car']['turn'] = turn
-                        
-                answer['state'] = carStatus.statusCar['car']
-                self.conn.send(json.dumps(answer, ensure_ascii=False).encode())
-            
-            # Т.к. не в цикле, то мы избавляемся от флуда команд. 
-            # Будет передано последнее актуальное состояние.
-            print(carStatus.statusCar)
-            self.TE.newStatus(carStatus.statusCar)
-'''
 
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, service_shutdown)

@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 # Server is stay in GAZ-66.
 
+import zmq
 import time
 
 import sys, time
@@ -26,6 +27,65 @@ import tickEvent
 
 class ServerThread(Thread, conf.conf):
     tcpServer = None
+    
+    def __init__(self): 
+        Thread.__init__(self) 
+        context = zmq.Context()
+        self.tcpServer = context.socket(zmq.PAIR)
+        self.tcpServer.bind("tcp://" + conf.conf.ServerIP + ":" + str(conf.conf.controlServerPort))
+        
+        # Управление через tickEvent
+        self.TE = tickEvent.tickEvent()
+        
+    def __del__(self):
+        # Потеря связи или прекращение работы, отключение машинки
+        self.TE.newStatus(carStatusDefault.statusCar)
+
+    def run(self):
+        while True:
+            data = self.tcpServer.recv().decode()
+            
+            # Обработка полученных команд.
+            #print(data)
+            data = data.replace('}{', '}\n\n{')
+            data = data.split('\n\n')
+            
+            #for i in reversed(data):
+            for i in data:
+                try:
+                    cmd = json.loads(i)
+                except:                
+                    continue
+                
+                #print(cmd)
+            
+                answer = {}
+                answer['type'] = 'car'
+                answer['cmd'] = cmd['cmd']
+            
+                # Свет.
+                if cmd['cmd'] == 'Start':
+                    #print(cmd)
+                    if cmd['status'] == True :                        
+                        carStatus.statusCar['car']['light'] = not carStatus.statusCar['car']['light']
+                elif cmd['cmd'] == 'speed':
+                    speed = -1 * cmd['x']
+                    carStatus.statusCar['car']['speed'] = speed
+                elif cmd['cmd'] == 'turn':
+                    turn = cmd['y']
+                    carStatus.statusCar['car']['turn'] = turn
+                        
+                answer['state'] = carStatus.statusCar['car']
+                self.tcpServer.send_string(json.dumps(answer, ensure_ascii=False))
+            
+            # Т.к. не в цикле, то мы избавляемся от флуда команд. 
+            # Будет передано последнее актуальное состояние.
+            print(carStatus.statusCar)
+            self.TE.newStatus(carStatus.statusCar)
+
+'''
+class ServerThread(Thread, conf.conf):
+    tcpServer = None
     threads = [] 
     
     def __init__(self): 
@@ -34,7 +94,7 @@ class ServerThread(Thread, conf.conf):
     def __del__(self):
         pass
 
-    def run(self): 
+    def run(self):
         TCP_IP = conf.conf.ServerIP
         TCP_PORT = conf.conf.controlServerPort
         BUFFER_SIZE = conf.conf.ServerBufferSize
@@ -70,7 +130,8 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
         self.TE = tickEvent.tickEvent()
 
     def __del__(self):
-        pass
+        # Потеря связи или прекращение работы, отключение машинки
+        self.TE.newStatus(carStatusDefault.statusCar)
 
     def run(self): 
         while True : 
@@ -116,6 +177,7 @@ class ClientThread(Thread, conf.conf, HardwareSetting):
             # Будет передано последнее актуальное состояние.
             print(carStatus.statusCar)
             self.TE.newStatus(carStatus.statusCar)
+'''
 
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, service_shutdown)

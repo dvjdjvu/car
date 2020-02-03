@@ -2,6 +2,8 @@
 #-*- coding: utf-8 -*-
 # PyQt5 Video player
 
+import zmq
+
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QDir, Qt, QUrl
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
@@ -224,7 +226,82 @@ class VideoWindow(QMainWindow, conf.conf):
         else:
             super(VideoWindow, self).keyPressEvent(event)    
     '''
+
+class ClientThread(QThread, conf.conf):
     
+    tcpClient = None
+    timerCheckConnection = QtCore.QTimer()
+    mutex = QtCore.QMutex()
+    
+    signalDisplayPrint = pyqtSignal(str)
+    
+    def __init__(self, parent = None): 
+        QThread.__init__(self, parent)
+        context = zmq.Context()
+        self.tcpClient = context.socket(zmq.PAIR)
+        self.tcpClient.connect("tcp://" + conf.conf.ServerIP + ":" + str(conf.conf.controlServerPort))
+        self.tcpClientFD = self.tcpClient.getsockopt(zmq.FD)
+        
+        self.timerCheckConnection.timeout.connect(self.checkConnection)
+        self.flagCheckConnection = True
+        
+        self.timerCheckConnection.start(200)
+        
+    def run(self): 
+        
+        while True:
+            data = self.tcpClient.recv().decode()
+
+            # Получено сообщение, уставналиваем флаг в True
+            self.flagCheckConnection = True
+            
+            self.signalDisplayPrint.emit("У+")
+            carStatus.statusRemote['network']['control'] = True
+            
+    def sendCmd(self, cmd):        
+        print('Send data: ', cmd)
+        #print("sendCmd self.tcpClient", self.tcpClient)
+        
+        self.mutex.lock()
+            
+        self.tcpClient.send_string(json.dumps(cmd, ensure_ascii=False))
+        
+        '''
+        if self.tcpClient.poll(200, zmq.POLLIN):
+            self.tcpClient.recv(zmq.NOBLOCK).decode()
+            self.signalDisplayPrint.emit("У+")
+            carStatus.statusRemote['network']['control'] = True
+        else:
+            self.signalDisplayPrint.emit("У-")
+            carStatus.statusRemote['network']['control'] = False
+        '''
+
+        self.mutex.unlock()
+        
+        #self.flagCheckConnection = False
+        
+        #self.timerCheckConnection.start(100)
+        
+    def checkConnection(self):
+        #self.timerCheckConnection.stop()
+        
+        if self.flagCheckConnection == False :
+            self.signalDisplayPrint.emit("У-")
+            carStatus.statusRemote['network']['control'] = False
+        else :
+            self.signalDisplayPrint.emit("У+")
+            carStatus.statusRemote['network']['control'] = True
+       
+        cmd = {}
+        cmd['type'] = 'remote'
+        cmd['cmd'] = 'checkConnection'
+        
+        self.sendCmd(cmd)
+            
+        self.flagCheckConnection = False
+            
+
+'''
 class ClientThread(QThread, conf.conf):
     
     tcpClient = None
@@ -335,7 +412,8 @@ class ClientThread(QThread, conf.conf):
             print("self.tcpClient", self.tcpClient)
             self.signalDisplayPrint.emit("У-")
             carStatus.statusRemote['network']['control'] = False
-    
+'''
+
 class Remote(conf.conf):
     
     def start(self):
@@ -365,4 +443,3 @@ class Remote(conf.conf):
         wifiCheck.start()
         
         sys.exit(app.exec_())  
-

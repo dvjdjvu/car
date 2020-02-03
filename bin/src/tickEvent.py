@@ -21,7 +21,7 @@ class tickEvent(Thread):
     На каждом новом тике фактическое состояние будет пошагово доводиться до пользовательского.
     """
     
-    def __init__(self, time=0.1):
+    def __init__(self, time=0.05):
         """
         Инициализация
         
@@ -38,8 +38,9 @@ class tickEvent(Thread):
     
         self.HC = HardwareControl.HardwareControl()
     
-        # шаг плавности изменения хода
-        self.step = 0.05
+        # шаг плавности изменения хода, на сколько уменьшится или увелится скорость за один time
+        self.step = 0.1
+        # минимальная скорость начала движения, диапазон скорости от 0 до 1 переводится в диапазон от self.stepStart до 1
         self.stepStart = 0.2
         
         self.time = time
@@ -76,12 +77,10 @@ class tickEvent(Thread):
         
         self.mutex.release()
         
-        step = self.step
-        
-        #print("sA {}\t sU {}\t delta {}\t step {}".format(sA, sU, delta, step))
+        #print("sA {}\t sU {}\t delta {}\t self.step {}".format(sA, sU, delta, self.step))
         
         if sA < sU:
-            sA += step
+            sA += self.step
             if sA == 0:
                 self.HC.moveStop()
             elif sA < 0.0:
@@ -90,7 +89,7 @@ class tickEvent(Thread):
                 self.HC.moveForward(sA * (1 - self.stepStart) + self.stepStart)
                
         if sA > sU:
-            sA -= step
+            sA -= self.step
             if sA == 0:
                 self.HC.moveStop()
             elif sA < 0.0:

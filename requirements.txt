@@ -3,3 +3,4 @@ Adafruit-ADS1x15>=1.0.2
 Adafruit-PCA9685>=1.0.1
 RPi.GPIO>=0.7.0
 picamera>=1.13
+zmq>=0.0.0

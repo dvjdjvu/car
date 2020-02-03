@@ -70,6 +70,9 @@ class PWM_L298N_Motor:
             speed: Задаест скорость движение от 0 до 1.
         """
         
+        # защита от выходы за диапазоны
+        speed = self.sign(speed) * abs(speed)
+        
         self.pwm.set_pwm(self.ena, 0, int(speed * self.HIGH))
         self.pwm.set_pwm(self.enb, 0, int(speed * self.HIGH))
         
@@ -85,6 +88,9 @@ class PWM_L298N_Motor:
         Args:
             speed: Задаест скорость движение от 0 до 1.
         """
+        
+        # защита от выходы за диапазоны
+        speed = self.sign(speed) * abs(speed)
         
         self.pwm.set_pwm(self.ena, 0, int(speed * self.HIGH))
         self.pwm.set_pwm(self.enb, 0, int(speed * self.HIGH))
@@ -104,4 +110,19 @@ class PWM_L298N_Motor:
         
         self.pwm.set_pwm_freq(freq)
         
+    def sign(self, a):
+        """
+        Знак числа
+        
+        Args:
+            a: Число.
+        """
+        
+        if a > 0 :
+            return 1
+        elif a < 0 :
+            return -1
+        
+        return 0
+            
         

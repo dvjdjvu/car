@@ -15,3 +15,4 @@ class CarStatus:
         pass
     
 carStatus = CarStatus()
+carStatusDefault = CarStatus()

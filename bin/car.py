@@ -38,7 +38,7 @@ def ProcessingInit(conf):
     streamerThread = streamer.StreamerThread()
     streamerThread.start()
         
-    serverThread.wait()
+    serverThread.join()
     streamerThread.wait()
         
 

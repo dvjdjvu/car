@@ -14,7 +14,7 @@ class tickEvent(Thread):
     Пользовательское состояние, в каком находится пульт управления (в каком положении джойстик аксилиратора, управления колес и т.п.)
     
     Два состояния нужны для сглаживания управления, т.к. без него будет резкий отклик на изменение состояния акселератора.
-    (Машинка будет с максимальной скорости тут же тормозить, с места максимально ускоряться. Что дает нежелательный рывок и доп. нугрузку на трансмиссию)
+    (Машинка будет с максимальной скорости моментально тормозить до 0, с места максимально ускоряться. Что дает нежелательный рывок и доп. нугрузку на трансмиссию)
     Что негативно скажется на механических элементах машины.
     
     Система управления будет сделана на таймере. 
@@ -39,9 +39,9 @@ class tickEvent(Thread):
         self.HC = HardwareControl.HardwareControl()
     
         # шаг плавности изменения хода, на сколько уменьшится или увелится скорость за один time
-        self.step = 0.1
-        # минимальная скорость начала движения, диапазон скорости от 0 до 1 переводится в диапазон от self.stepStart до 1
-        self.stepStart = 0.2
+        self.stepSmooth = 0.2
+        # минимальная скорость начала движения, диапазон скорости от 0 до 1 переводится в диапазон от self.stepMoving до 1
+        self.stepMoving = 0.25
         
         self.time = time
         
@@ -70,32 +70,32 @@ class tickEvent(Thread):
         sA = self.statusActual['car']['speed']
         sU = self.statusUser['car']['speed']
         
-        if abs(sA) < self.step :
+        if abs(sA) < self.stepSmooth :
             sA = 0
         
         delta = sU - sA
         
         self.mutex.release()
         
-        #print("sA {}\t sU {}\t delta {}\t self.step {}".format(sA, sU, delta, self.step))
+        #print("sA {}\t sU {}\t delta {}\t self.stepSmooth {}".format(sA, sU, delta, self.stepSmooth))
         
         if sA < sU:
-            sA += self.step
+            sA += self.stepSmooth
             if sA == 0:
                 self.HC.moveStop()
             elif sA < 0.0:
-                self.HC.moveBack(sA * (1 - self.stepStart) + self.stepStart)
+                self.HC.moveBack(sA * (1 - self.stepMoving) + self.stepMoving)
             elif sA > 0.0:
-                self.HC.moveForward(sA * (1 - self.stepStart) + self.stepStart)
+                self.HC.moveForward(sA * (1 - self.stepMoving) + self.stepMoving)
                
         if sA > sU:
-            sA -= self.step
+            sA -= self.stepSmooth
             if sA == 0:
                 self.HC.moveStop()
             elif sA < 0.0:
-                self.HC.moveBack(sA * (1 - self.stepStart) + self.stepStart)
+                self.HC.moveBack(sA * (1 - self.stepMoving) + self.stepMoving)
             elif sA > 0.0:
-                self.HC.moveForward(sA * (1 - self.stepStart) + self.stepStart)
+                self.HC.moveForward(sA * (1 - self.stepMoving) + self.stepMoving)
            
         if sA == 0 :
             self.HC.moveStop()        

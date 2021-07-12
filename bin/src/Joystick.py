@@ -89,7 +89,7 @@ class Joystick(QThread, HardwareSetting):
             self.sx = SX
             self.sy = SY
             
-            time.sleep(0.005)
+            time.sleep(HardwareSetting.joystickTime)
         
     def sendCmd(self, _cmd, x, y):
         cmd = {}

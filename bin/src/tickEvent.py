@@ -141,6 +141,18 @@ class tickEvent(Thread):
             
             #print("light change");
         
+        # Управление лебедкой.
+        if self.statusActual['car']['winch'] != self.statusUser['car']['winch']:
+            self.statusActual['car']['winch'] = self.statusUser['car']['winch']
+            
+            if self.statusActual['car']['winch'] == 0: # лебедка не работает
+                self.HC.winchStop()
+            elif self.statusActual['car']['winch'] > 0: # Разматывается
+                self.HC.winchForward()
+            elif self.statusActual['car']['winch'] < 0: # Тащит
+                self.HC.winchBack()
+            
+        
         #self.start()
 
 if __name__ == "__main__":

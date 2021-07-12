@@ -273,6 +273,12 @@ class ClientThread(QThread, conf.conf):
         elif cmd['cmd'] == 'turn':
             turn = cmd['y']
             carStatus.statusRemote['car']['turn'] = turn
+        elif cmd['cmd'] == 'X':
+            winch = cmd['val']
+            carStatus.statusRemote['car']['winch'] = winch
+        elif cmd['cmd'] == 'Y':
+            winch = cmd['val']
+            carStatus.statusRemote['car']['winch'] = winch
         
         self.mutex.lock()
             

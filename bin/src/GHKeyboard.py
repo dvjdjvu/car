@@ -50,8 +50,8 @@ class GHK(QThread):
                      18 : {'pin': 'TR',     'description' : 'правый поворотник', 'status': False, 'callback': self.callbackTR, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
                      23 : {'pin': 'TL',     'description' : 'левый поворотник', 'status': False, 'callback': self.callbackTL, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
                      12 : {'pin': 'B',      'description' : 'понизить передачу', 'status': False, 'callback': self.callbackB, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
-                     16 : {'pin': 'X',      'description' : 'повысить передачу', 'status': False, 'callback': self.callbackX, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
-                     20 : {'pin': 'Y',      'description' : '',  'status': False, 'callback': self.callbackY, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
+                     16 : {'pin': 'X',      'description' : 'Лебедка разматать', 'status': False, 'callback': self.callbackX, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
+                     20 : {'pin': 'Y',      'description' : 'Лебедка тащить',  'status': False, 'callback': self.callbackY, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
                      21 : {'pin': 'Start',  'description' : 'свет', 'status': False, 'callback': self.callbackStart, 'Bouncetime': 400, 'input': GPIO.BOTH}
                      }
         
@@ -94,7 +94,7 @@ class GHK(QThread):
         self.sendCmd(pin, self.pins[pin])
     
     def callbackA(self, pin) :
-        self.sendCmd(pin, self.pins[pin], 0.75)
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackTR(self, pin) :
         self.sendCmd(pin, self.pins[pin])
@@ -103,13 +103,13 @@ class GHK(QThread):
         self.sendCmd(pin, self.pins[pin])
     
     def callbackB(self, pin) :
-        self.sendCmd(pin, self.pins[pin], 0.66)
+        self.sendCmd(pin, self.pins[pin])
     
     def callbackX(self, pin) :
         self.sendCmd(pin, self.pins[pin], 1.0)
     
     def callbackY(self, pin) :
-        self.sendCmd(pin, self.pins[pin], 0.5)
+        self.sendCmd(pin, self.pins[pin], -1.0)
     
     def callbackStart(self, pin) :
         self.sendCmd(pin, self.pins[pin])

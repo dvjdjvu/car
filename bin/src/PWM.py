@@ -36,35 +36,6 @@ class PWM_Servo:
         """
         
         self.pwm.set_pwm_freq(freq)
-
-class PWM_Winch:
-    """
-    Класс управления лебедкой.
-    """
-    
-    def __init__(self, pin):
-        self.pin = pin
-        self.pwm = Adafruit_PCA9685.PCA9685()
-
-    def set(self, val):
-        """
-        Установка уровня ШИМ.
-        
-        Args:
-            val: Уровень заполнения.
-        """
-        
-        self.pwm.set_pwm(self.pin, 0, int(val))
-    
-    def setFreq(self, freq = 50):
-        """
-        Частота ШИМ.
-        
-        Args:
-            freq: Частота в герцах.
-        """
-        
-        self.pwm.set_pwm_freq(freq)
    
 class PWM_L298N_Motor:
     """
@@ -149,7 +120,7 @@ class PWM_L298N_Motor:
         Знак числа
         
         Args:
-            a: Число.
+            a: Ч�сло.
         """
         
         if a > 0 :

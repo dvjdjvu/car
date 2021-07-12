@@ -245,7 +245,7 @@ class ClientThread(QThread, conf.conf):
         self.timerCheckConnection.timeout.connect(self.checkConnection)
         self.flagCheckConnection = True
         
-        self.timerCheckConnection.start(200)
+        self.timerCheckConnection.start(400)
         
     def run(self): 
         
@@ -267,18 +267,18 @@ class ClientThread(QThread, conf.conf):
             #print(cmd)
             if cmd['status'] == True :                        
                 carStatus.statusRemote['car']['light'] = not carStatus.statusRemote['car']['light']
-        elif cmd['cmd'] == 'speed':
+        elif cmd['cmd'] == 'speed': # Скорость
             speed = -1 * cmd['x']
             carStatus.statusRemote['car']['speed'] = speed
-        elif cmd['cmd'] == 'turn':
+        elif cmd['cmd'] == 'turn': # Угол поворота колес
             turn = cmd['y']
             carStatus.statusRemote['car']['turn'] = turn
-        elif cmd['cmd'] == 'X':
-            winch = cmd['val']
-            carStatus.statusRemote['car']['winch'] = winch
-        elif cmd['cmd'] == 'Y':
-            winch = cmd['val']
-            carStatus.statusRemote['car']['winch'] = winch
+        #elif cmd['cmd'] == 'X': # Лебедка
+        #    winch = cmd['val']
+        #    carStatus.statusRemote['car']['winch'] = winch
+        #elif cmd['cmd'] == 'Y': # Лебедка
+        #    winch = cmd['val']
+        #    carStatus.statusRemote['car']['winch'] = winch
         
         self.mutex.lock()
             
@@ -311,7 +311,7 @@ class ClientThread(QThread, conf.conf):
         cmd['type'] = 'remote'
         cmd['cmd'] = 'checkConnection'
         
-        self.sendCmd(carStatus.statusRemote)
+        #self.sendCmd(carStatus.statusRemote)
             
         self.flagCheckConnection = False
 

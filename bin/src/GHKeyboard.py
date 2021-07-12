@@ -47,9 +47,9 @@ class GHK(QThread):
                      13 : {'pin': 'Left',   'description' : '', 'status': False, 'callback': self.callbackLeft, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
                      19 : {'pin': 'Right',  'description' : '', 'status': False, 'callback': self.callbackRight, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
                      26 : {'pin': 'A',      'description' : '', 'status': False, 'callback': self.callbackA, 'Bouncetime': 100, 'input': GPIO.BOTH},  
-                     18 : {'pin': 'TR',     'description' : 'правый поворотник', 'status': False, 'callback': self.callbackTR, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
-                     23 : {'pin': 'TL',     'description' : 'левый поворотник', 'status': False, 'callback': self.callbackTL, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
-                     12 : {'pin': 'B',      'description' : 'понизить передачу', 'status': False, 'callback': self.callbackB, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
+                     18 : {'pin': 'TR',     'description' : '', 'status': False, 'callback': self.callbackTR, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
+                     23 : {'pin': 'TL',     'description' : '', 'status': False, 'callback': self.callbackTL, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
+                     12 : {'pin': 'B',      'description' : '', 'status': False, 'callback': self.callbackB, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
                      16 : {'pin': 'X',      'description' : 'Лебедка разматать', 'status': False, 'callback': self.callbackX, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
                      20 : {'pin': 'Y',      'description' : 'Лебедка тащить',  'status': False, 'callback': self.callbackY, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
                      21 : {'pin': 'Start',  'description' : 'свет', 'status': False, 'callback': self.callbackStart, 'Bouncetime': 400, 'input': GPIO.BOTH}

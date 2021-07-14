@@ -66,6 +66,7 @@ class HardwareControl():
 
     def __del__(self):
         GPIO.output(self.gpioLight, GPIO.LOW)
+        GPIO.output(self.gpioLightBack, GPIO.LOW)
         
         self.moveStop()
         self.turnCenter()
@@ -74,10 +75,12 @@ class HardwareControl():
 
     def lightSet(self, light):
         if light == False :
+            print("light GPIO.HIGH")
             # Включить свет.
             GPIO.output(self.gpioLight, GPIO.HIGH) # передний
             GPIO.output(self.gpioLightBack, GPIO.HIGH) # задний
         else :
+            print("light GPIO.LOW")
             # Выключить свет.
             GPIO.output(self.gpioLight, GPIO.LOW) # передний
             GPIO.output(self.gpioLightBack, GPIO.LOW) # задний

@@ -24,4 +24,7 @@ class HardwareSetting:
     
     # Время опроса джойстика
     joystickTime = 0.005
+    
+    # Время опроса клавиатуры
+    keyboardTime = 0.005
         

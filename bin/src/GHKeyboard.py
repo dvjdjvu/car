@@ -8,6 +8,7 @@ import os
 
 from threading import Thread 
 from PyQt5.QtCore import QThread, pyqtSignal
+from HardwareSetting import HardwareSetting 
 
 import time
 import json
@@ -20,7 +21,7 @@ class GHK(QThread):
     def run(self):
         try:
             while True:
-                time.sleep(0.005)
+                time.sleep(HardwareSetting.keyboardTime)
                 for pin in self.pins :
                     p = self.pins[pin]
                     

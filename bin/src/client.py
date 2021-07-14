@@ -239,24 +239,37 @@ class ClientThread(QThread, conf.conf):
         QThread.__init__(self, parent)
         context = zmq.Context()
         self.tcpClient = context.socket(zmq.PAIR)
+        self.tcpClient.setsockopt(zmq.RCVTIMEO, 50)
+        self.tcpClient.setsockopt(zmq.SNDTIMEO, 50)
         self.tcpClient.connect("tcp://" + conf.conf.ServerIP + ":" + str(conf.conf.controlServerPort))
         self.tcpClientFD = self.tcpClient.getsockopt(zmq.FD)
         
-        self.timerCheckConnection.timeout.connect(self.checkConnection)
+        #self.timerCheckConnection.timeout.connect(self.checkConnection)
         self.flagCheckConnection = True
         
-        self.timerCheckConnection.start(400)
+        #self.timerCheckConnection.start(400)
         
     def run(self): 
         
         while True:
-            data = self.tcpClient.recv().decode()
-
-            # Получено сообщение, уставналиваем флаг в True
-            self.flagCheckConnection = True
-            
-            self.signalDisplayPrint.emit("У+")
-            carStatus.statusRemote['network']['control'] = True
+            try:
+                data = self.tcpClient.recv().decode()
+                
+                # Получено сообщение, уставналиваем флаг в True
+                self.signalDisplayPrint.emit("У+")
+                carStatus.statusRemote['network']['control'] = True
+                
+                self.flagCheckConnection = True
+                
+            except zmq.ZMQError as e:
+                if e.errno == zmq.EAGAIN:
+                    # выпадаем по timeout
+                    pass
+                
+                self.signalDisplayPrint.emit("У-")
+                carStatus.statusRemote['network']['control'] = False
+                
+                self.flagCheckConnection = False
             
     def sendCmd(self, cmd):        
         #print('Send data: ', cmd)
@@ -281,21 +294,23 @@ class ClientThread(QThread, conf.conf):
         #    carStatus.statusRemote['car']['winch'] = winch
         
         self.mutex.lock()
+        
+        try:
+            self.tcpClient.send_string(json.dumps(carStatus.statusRemote, ensure_ascii=False))
             
-        self.tcpClient.send_string(json.dumps(carStatus.statusRemote, ensure_ascii=False))
+            self.signalDisplayPrint.emit("У+")
+            carStatus.statusRemote['network']['control'] = True
+            
+            self.flagCheckConnection = True
+            
+        except zmq.ZMQError as e:
+            self.signalDisplayPrint.emit("У-")
+            carStatus.statusRemote['network']['control'] = False
+            
+            self.flagCheckConnection = False
             
         print(carStatus.statusRemote)
             
-        '''
-        if self.tcpClient.poll(200, zmq.POLLIN):
-            self.tcpClient.recv(zmq.NOBLOCK).decode()
-            self.signalDisplayPrint.emit("У+")
-            carStatus.statusRemote['network']['control'] = True
-        else:
-            self.signalDisplayPrint.emit("У-")
-            carStatus.statusRemote['network']['control'] = False
-        '''
-
         self.mutex.unlock()
         
     def checkConnection(self):

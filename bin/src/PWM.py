@@ -24,8 +24,11 @@ class PWM_Servo:
         Args:
             val: Уровень заполнения.
         """
-        
-        self.pwm.set_pwm(self.pin, 0, int(val))
+
+        try:
+            self.pwm.set_pwm(self.pin, 0, int(val))
+        except Exception as error:
+            return
     
     def setFreq(self, freq = 50):
         """

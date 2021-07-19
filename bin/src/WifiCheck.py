@@ -11,7 +11,6 @@ class WifiCheck(QThread):
     signalSendStatus = pyqtSignal(object)
 
     def __init__(self, parent = None):
-        #Thread.__init__(self) 
         QThread.__init__(self, parent) 
 
     def run(self):

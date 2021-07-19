@@ -230,6 +230,7 @@ class VideoWindow(QMainWindow, conf.conf):
 class ClientThread(QThread, conf.conf):
     
     tcpClient = None
+    tcpClientTimeWait = 100
     timerCheckConnection = QtCore.QTimer()
     mutex = QtCore.QMutex()
     
@@ -239,15 +240,15 @@ class ClientThread(QThread, conf.conf):
         QThread.__init__(self, parent)
         context = zmq.Context()
         self.tcpClient = context.socket(zmq.PAIR)
-        self.tcpClient.setsockopt(zmq.RCVTIMEO, 50)
-        self.tcpClient.setsockopt(zmq.SNDTIMEO, 50)
+        self.tcpClient.setsockopt(zmq.RCVTIMEO, self.tcpClientTimeWait)
+        self.tcpClient.setsockopt(zmq.SNDTIMEO, self.tcpClientTimeWait)
         self.tcpClient.connect("tcp://" + conf.conf.ServerIP + ":" + str(conf.conf.controlServerPort))
         self.tcpClientFD = self.tcpClient.getsockopt(zmq.FD)
         
-        #self.timerCheckConnection.timeout.connect(self.checkConnection)
+        self.timerCheckConnection.timeout.connect(self.checkConnection)
         self.flagCheckConnection = True
         
-        #self.timerCheckConnection.start(400)
+        self.timerCheckConnection.start(self.tcpClientTimeWait)
         
     def run(self): 
         
@@ -286,12 +287,12 @@ class ClientThread(QThread, conf.conf):
         elif cmd['cmd'] == 'turn': # Угол поворота колес
             turn = cmd['y']
             carStatus.statusRemote['car']['turn'] = turn
-        #elif cmd['cmd'] == 'X': # Лебедка
-        #    winch = cmd['val']
-        #    carStatus.statusRemote['car']['winch'] = winch
-        #elif cmd['cmd'] == 'Y': # Лебедка
-        #    winch = cmd['val']
-        #    carStatus.statusRemote['car']['winch'] = winch
+        elif cmd['cmd'] == 'X': # Лебедка
+            winch = cmd['val']
+            carStatus.statusRemote['car']['winch'] = winch
+        elif cmd['cmd'] == 'Y': # Лебедка
+            winch = cmd['val']
+            carStatus.statusRemote['car']['winch'] = winch
         
         self.mutex.lock()
         
@@ -317,18 +318,14 @@ class ClientThread(QThread, conf.conf):
         
         if self.flagCheckConnection == False :
             self.signalDisplayPrint.emit("У-")
-            carStatus.statusRemote['network']['control'] = False
         else :
             self.signalDisplayPrint.emit("У+")
-            carStatus.statusRemote['network']['control'] = True
        
         cmd = {}
         cmd['type'] = 'remote'
         cmd['cmd'] = 'checkConnection'
         
-        #self.sendCmd(carStatus.statusRemote)
-            
-        self.flagCheckConnection = False
+        self.sendCmd(cmd)
 
 class Remote(conf.conf):
     
@@ -338,8 +335,8 @@ class Remote(conf.conf):
         player = VideoWindow()
         player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
         
-        #player.show()
-        player.showFullScreen()
+        player.show()
+        #player.showFullScreen()
         
         player.setCursor(Qt.BlankCursor)
         

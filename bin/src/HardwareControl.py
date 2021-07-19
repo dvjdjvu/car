@@ -5,6 +5,7 @@ import RPi.GPIO as GPIO
 import PWM
 
 import sys
+import time
 sys.path.append('../../conf')
 
 from HardwareSetting import HardwareSetting 
@@ -37,11 +38,11 @@ class HardwareControl():
         # Лебедка.
         ##
         
-        self.gpioWinchForward = 13
+        self.gpioWinchForward = 19
         GPIO.setup(self.gpioWinchForward, GPIO.OUT)
         GPIO.output(self.gpioWinchForward, GPIO.LOW)
         
-        self.gpioWinchBack = 19
+        self.gpioWinchBack = 26
         GPIO.setup(self.gpioWinchBack, GPIO.OUT)
         GPIO.output(self.gpioWinchBack, GPIO.LOW)
         
@@ -62,25 +63,43 @@ class HardwareControl():
         self.L298_IN4 = 15        
         self.L298_ENB = 11
         self.pwm_motor = PWM.PWM_L298N_Motor(self.L298_ENA, self.L298_IN1, self.L298_IN2, self.L298_IN3, self.L298_IN4, self.L298_ENB)
-        self.pwm_motor.setFreq()
+        #self.pwm_motor.setFreq()
 
     def __del__(self):
         GPIO.output(self.gpioLight, GPIO.LOW)
         GPIO.output(self.gpioLightBack, GPIO.LOW)
+        
+        GPIO.output(self.gpioWinchForward, GPIO.LOW)
+        GPIO.output(self.gpioWinchBack, GPIO.LOW)
         
         self.moveStop()
         self.turnCenter()
         
         GPIO.cleanup()
 
+    def lightTest(self):
+        
+        ps = .5
+        
+        # 3-е кратное мигание фарами на запуске, показывает успешный запуск
+        for i in range(3) :
+        
+            GPIO.output(self.gpioLight, GPIO.HIGH) # передний
+            GPIO.output(self.gpioLightBack, GPIO.HIGH) # задний
+        
+            time.sleep(ps)
+        
+            GPIO.output(self.gpioLight, GPIO.LOW) # передний
+            GPIO.output(self.gpioLightBack, GPIO.LOW) # задний
+            
+            time.sleep(ps)
+
     def lightSet(self, light):
         if light == False :
-            print("light GPIO.HIGH")
             # Включить свет.
             GPIO.output(self.gpioLight, GPIO.HIGH) # передний
             GPIO.output(self.gpioLightBack, GPIO.HIGH) # задний
         else :
-            print("light GPIO.LOW")
             # Выключить свет.
             GPIO.output(self.gpioLight, GPIO.LOW) # передний
             GPIO.output(self.gpioLightBack, GPIO.LOW) # задний
@@ -107,8 +126,8 @@ class HardwareControl():
         self.pwm_servo.set(val)
 
     def winchForward(self):
-        GPIO.output(self.gpioWinchForward, GPIO.HIGH)
         GPIO.output(self.gpioWinchBack, GPIO.LOW)
+        GPIO.output(self.gpioWinchForward, GPIO.HIGH)
     
     def winchBack(self):
         GPIO.output(self.gpioWinchForward, GPIO.LOW)

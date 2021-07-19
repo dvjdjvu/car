@@ -33,13 +33,12 @@ class GHK(QThread):
                         p['status'] = True
                         
                     if p['status'] != status :
-                        p['callback'](pin)
+                        p['callback'](pin, status)
             
         except KeyboardInterrupt:
             GPIO.cleanup()    
     
     def __init__(self, parent = None):
-        #Thread.__init__(self) 
         QThread.__init__(self, parent) 
         
         self.pins = {4 :  {'pin': 'Select', 'description' : '', 'status': False, 'callback': self.callbackSelect, 'Bouncetime': 100, 'input': GPIO.BOTH}, 
@@ -79,39 +78,45 @@ class GHK(QThread):
         
         self.signalSendCmd.emit(cmd)
     
-    def callbackSelect(self, pin) :
+    def callbackSelect(self, pin, status) :
         self.sendCmd(pin, self.pins[pin])
     
-    def callbackUp(self, pin) :
+    def callbackUp(self, pin, status) :
         self.sendCmd(pin, self.pins[pin])
     
-    def callbackDown(self, pin) :
+    def callbackDown(self, pin, status) :
         self.sendCmd(pin, self.pins[pin])
     
-    def callbackLeft(self, pin) :
+    def callbackLeft(self, pin, status) :
         self.sendCmd(pin, self.pins[pin])
     
-    def callbackRight(self, pin) :
+    def callbackRight(self, pin, status) :
         self.sendCmd(pin, self.pins[pin])
     
-    def callbackA(self, pin) :
+    def callbackA(self, pin, status) :
         self.sendCmd(pin, self.pins[pin])
     
-    def callbackTR(self, pin) :
+    def callbackTR(self, pin, status) :
         self.sendCmd(pin, self.pins[pin])
     
-    def callbackTL(self, pin) :
+    def callbackTL(self, pin, status) :
         self.sendCmd(pin, self.pins[pin])
     
-    def callbackB(self, pin) :
+    def callbackB(self, pin, status) :
         self.sendCmd(pin, self.pins[pin])
     
-    def callbackX(self, pin) :
-        self.sendCmd(pin, self.pins[pin], 1.0)
+    def callbackX(self, pin, status) :
+        if not status :
+            self.sendCmd(pin, self.pins[pin], 1.0)
+        else :
+            self.sendCmd(pin, self.pins[pin], 0.0)
     
-    def callbackY(self, pin) :
-        self.sendCmd(pin, self.pins[pin], -1.0)
+    def callbackY(self, pin, status) :
+        if not status :
+            self.sendCmd(pin, self.pins[pin], -1.0)
+        else :
+            self.sendCmd(pin, self.pins[pin], 0.0)
     
-    def callbackStart(self, pin) :
+    def callbackStart(self, pin, status) :
         self.sendCmd(pin, self.pins[pin])
    

@@ -23,7 +23,6 @@ class Joystick(QThread, HardwareSetting):
     signalSendCmd = pyqtSignal(object)
     
     def __init__(self, parent = None):
-        #Thread.__init__(self) 
         QThread.__init__(self, parent) 
          
         self.adc = Adafruit_ADS1x15.ADS1115()

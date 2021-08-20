@@ -76,9 +76,6 @@ class tickEvent(Thread):
         speedA = self.statusActual['car']['speed']
         speedU = self.statusUser['car']['speed']
         
-        servoA = self.statusActual['car']['turn']
-        servoU = self.statusUser['car']['turn']
-        
         self.mutex.release()
         
         ##
@@ -111,36 +108,6 @@ class tickEvent(Thread):
         
         self.statusActual['car']['speed'] = speedA
         
-        ##
-        # Управление сервоприводом.
-        ##
-        '''
-        if abs(servoA) < self.stepTurn :
-            servoA = 0
-        
-        if servoA < servoU:
-            servoA += self.stepTurn
-            if servoA == 0 :
-                self.HC.turnCenter()
-            elif servoA < 0.0:
-                self.HC.turnLeft(servoA)
-            elif servoA > 0.0:
-                self.HC.turnRight(servoA)
-        
-        if servoA > servoU:
-            servoA -= self.stepTurn
-            if servoA == 0 :
-                self.HC.turnCenter()
-            elif servoA < 0.0:
-                self.HC.turnLeft(servoA)
-            elif servoA > 0.0:
-                self.HC.turnRight(servoA)
-        
-        if servoA == 0 :
-            self.HC.turnCenter()
-        
-        self.statusActual['car']['turn'] = servoA
-        '''
         self.start()
         
     def newStatus(self, status):
@@ -163,7 +130,13 @@ class tickEvent(Thread):
         # За счет чего достигается плавность поворота колес.
         if self.statusActual['car']['turn'] != self.statusUser['car']['turn']:
             self.statusActual['car']['turn'] = self.statusUser['car']['turn']
-        
+            
+            # Защита от выпада за границы
+            if self.statusActual['car']['turn'] > 100 :
+                self.statusActual['car']['turn'] = 100
+            if self.statusActual['car']['turn'] < -100 :
+                self.statusActual['car']['turn'] = -100
+            
             if self.statusActual['car']['turn'] == 0: # Колеса ровно
                 self.HC.turnCenter()
             elif self.statusActual['car']['turn'] > 0: # Право
@@ -189,4 +162,3 @@ class tickEvent(Thread):
         elif self.statusActual['car']['winch'] < 0: # Тащит
             self.HC.winchBack()
 
-        self.statusActual = self.statusUser

@@ -123,7 +123,7 @@ class PWM_L298N_Motor:
         Знак числа
         
         Args:
-            a: Ч�сло.
+            a: Число.
         """
         
         if a > 0 :

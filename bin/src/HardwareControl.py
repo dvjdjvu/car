@@ -63,7 +63,7 @@ class HardwareControl():
         self.L298_IN4 = 15        
         self.L298_ENB = 11
         self.pwm_motor = PWM.PWM_L298N_Motor(self.L298_ENA, self.L298_IN1, self.L298_IN2, self.L298_IN3, self.L298_IN4, self.L298_ENB)
-        #self.pwm_motor.setFreq()
+        self.pwm_motor.setFreq()
 
     def __del__(self):
         GPIO.output(self.gpioLight, GPIO.LOW)

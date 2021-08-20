@@ -246,9 +246,9 @@ class ClientThread(QThread, conf.conf):
         self.tcpClientFD = self.tcpClient.getsockopt(zmq.FD)
         
         self.timerCheckConnection.timeout.connect(self.checkConnection)
-        self.flagCheckConnection = True
-        
-        self.timerCheckConnection.start(self.tcpClientTimeWait)
+        self.flagCheckConnection = True 
+       
+        self.timerCheckConnection.start(2 * self.tcpClientTimeWait)
         
     def run(self): 
         

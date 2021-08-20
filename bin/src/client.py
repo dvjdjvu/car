@@ -183,7 +183,7 @@ class VideoWindow(QMainWindow, conf.conf):
             carStatus.statusRemote['network']['wifi'] = False
         elif _str == 'wifi+' :
             self.labelWifiStatus.hide()
-            carStatus.statusRemote['network']['video'] = True
+            carStatus.statusRemote['network']['wifi'] = True
             
 
     def event(self, e):

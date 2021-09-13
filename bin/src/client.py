@@ -245,10 +245,10 @@ class ClientThread(QThread, conf.conf):
         self.tcpClient.connect("tcp://" + conf.conf.ServerIP + ":" + str(conf.conf.controlServerPort))
         self.tcpClientFD = self.tcpClient.getsockopt(zmq.FD)
         
-        self.timerCheckConnection.timeout.connect(self.checkConnection)
-        self.flagCheckConnection = True 
+        #self.timerCheckConnection.timeout.connect(self.checkConnection)
+        #self.flagCheckConnection = True 
        
-        self.timerCheckConnection.start(2 * self.tcpClientTimeWait)
+        #self.timerCheckConnection.start(2 * self.tcpClientTimeWait)
         
     def run(self): 
         
@@ -256,11 +256,17 @@ class ClientThread(QThread, conf.conf):
             try:
                 data = self.tcpClient.recv().decode()
                 
-                # Получено сообщение, уставналиваем флаг в True
-                self.signalDisplayPrint.emit("У+")
-                carStatus.statusRemote['network']['control'] = True
+                if data == None :
+                    self.signalDisplayPrint.emit("У-")
+                    carStatus.statusRemote['network']['control'] = False
                 
-                self.flagCheckConnection = True
+                    self.flagCheckConnection = False
+                else :
+                    # Получено сообщение, уставналиваем флаг в True
+                    self.signalDisplayPrint.emit("У+")
+                    carStatus.statusRemote['network']['control'] = True
+                
+                    self.flagCheckConnection = True
                 
             except zmq.ZMQError as e:
                 if e.errno == zmq.EAGAIN:

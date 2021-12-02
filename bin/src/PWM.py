@@ -2,9 +2,9 @@
 #-*- coding: utf-8 -*-
 
 try :
-    import Adafruit_PCA9685
+    import Adafruit_PCA9685 as Adafruit
 except (ImportError, RuntimeError) :
-    pass
+    import emulator as Adafruit
 
 ###
 ## !!! Частота должна быть 50 гц, так как серво машинка работает на ней, 
@@ -18,7 +18,7 @@ class PWM_Servo:
     
     def __init__(self, pin):
         self.pin = pin
-        self.pwm = Adafruit_PCA9685.PCA9685()
+        self.pwm = Adafruit.PCA9685()
 
     def set(self, val):
         """
@@ -58,7 +58,7 @@ class PWM_L298N_Motor:
         self.in3 = in3
         self.in4 = in4
         self.enb = enb
-        self.pwm = Adafruit_PCA9685.PCA9685()
+        self.pwm = Adafruit.PCA9685()
 
     def stop(self):
         """

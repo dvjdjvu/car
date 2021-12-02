@@ -2,10 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import os
-print(os.uname())
-
 import sys
-print(sys.version_info)
 
 import RPi.GPIO as GPIO
 import PWM

@@ -1,7 +1,10 @@
 #!/usr/bin/python3
 #-*- coding: utf-8 -*-
 
-import Adafruit_PCA9685
+try :
+    import Adafruit_PCA9685
+except (ImportError, RuntimeError) :
+    pass
 
 ###
 ## !!! Частота должна быть 50 гц, так как серво машинка работает на ней, 

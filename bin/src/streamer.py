@@ -2,15 +2,16 @@
 #-*- coding: utf-8 -*-
 
 import os
-from threading import Thread 
 from PyQt5.QtCore import QThread
 
-import io
+#import platform
+#print(platform.machine())
+
 import os
-import picamera
-import socketserver
-from threading import Condition
-from http import server
+try :
+    import picamera
+except (ImportError, RuntimeError) :
+    pass
 
 import sys
 sys.path.append('../../conf')
@@ -22,7 +23,6 @@ import camera
 class StreamerThread(QThread, conf.conf):
     
     def __init__(self, parent = None):
-        #Thread.__init__(self) 
         QThread.__init__(self, parent)    
     
     def run(self):

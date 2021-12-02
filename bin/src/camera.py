@@ -2,7 +2,6 @@
 #-*- coding: utf-8 -*-
 
 import io
-import picamera
 import logging
 import socketserver
 from threading import Condition

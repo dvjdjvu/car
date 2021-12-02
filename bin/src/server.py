@@ -11,7 +11,7 @@ import json
 from threading import Thread 
 from socketserver import ThreadingMixIn 
 
-import RPi.GPIO as GPIO
+###import RPi.GPIO as GPIO
 import PWM
 
 import os

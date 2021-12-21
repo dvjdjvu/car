@@ -230,7 +230,7 @@ class VideoWindow(QMainWindow, conf.conf):
 class ClientThread(QThread, conf.conf):
     
     tcpClient = None
-    tcpClientTimeWait = 100
+    tcpClientTimeWait = 500
     timerCheckConnection = QtCore.QTimer()
     mutex = QtCore.QMutex()
     
@@ -255,8 +255,8 @@ class ClientThread(QThread, conf.conf):
         while True:
             try:
                 data = self.tcpClient.recv().decode()
-                
                 if data == None :
+                    print("data == None Y-")
                     self.signalDisplayPrint.emit("У-")
                     carStatus.statusRemote['network']['control'] = False
                 
@@ -270,13 +270,18 @@ class ClientThread(QThread, conf.conf):
                 
             except zmq.ZMQError as e:
                 if e.errno == zmq.EAGAIN:
-                    # выпадаем по timeout
+                    # выпадаем по timeout, скорее всего нет связи
                     pass
                 
                 self.signalDisplayPrint.emit("У-")
                 carStatus.statusRemote['network']['control'] = False
                 
                 self.flagCheckConnection = False
+            
+                # Посылаем текущее состояние пульта, как проверку связи.
+                cmd = {}
+                cmd['cmd'] = 'test'
+                self.sendCmd(cmd)
             
     def sendCmd(self, cmd):        
         #print('Send data: ', cmd)
@@ -305,10 +310,10 @@ class ClientThread(QThread, conf.conf):
         try:
             self.tcpClient.send_string(json.dumps(carStatus.statusRemote, ensure_ascii=False))
             
-            self.signalDisplayPrint.emit("У+")
-            carStatus.statusRemote['network']['control'] = True
+            #self.signalDisplayPrint.emit("У+")
+            #carStatus.statusRemote['network']['control'] = True
             
-            self.flagCheckConnection = True
+            #self.flagCheckConnection = True
             
         except zmq.ZMQError as e:
             self.signalDisplayPrint.emit("У-")

@@ -10,6 +10,7 @@ import socket
 import json
 from threading import Thread 
 from socketserver import ThreadingMixIn 
+from datetime import datetime
 
 ###import RPi.GPIO as GPIO
 import PWM
@@ -46,6 +47,10 @@ class ServerThread(Thread, conf.conf):
             self.TE.newStatus(carStatusDefault.statusCar)
 
     def run(self):
+        dt_last_data = time.time()
+        # Защита от частого срабатывания, проверяем на потерю связи каждые dt_check сек.
+        dt_check = 0.5
+        
         while True:
             data = None
             
@@ -53,7 +58,14 @@ class ServerThread(Thread, conf.conf):
                 data = self.tcpServer.recv(zmq.NOBLOCK).decode()
             
             if data == None :
-                #self.TE.newStatus(carStatusDefault.statusCar)
+                dt_now = time.time()
+                dt_diff = dt_now - dt_last_data
+
+                if (dt_diff > dt_check) :
+                    # Вслучае потери связи, машинка останавливается.
+                    self.TE.newStatus(carStatusDefault.statusCar)
+                
+                dt_last_data = dt_now
                 
                 continue
             

@@ -33,6 +33,7 @@ class Joystick(QThread, HardwareSetting):
         
     def run(self):
         while True:
+            
             # Джойстик поворота колес
             X = self.adc.read_adc(0, gain=self.GAIN) / HardwareSetting.valueStep
             Y = self.adc.read_adc(1, gain=self.GAIN) / HardwareSetting.valueStep

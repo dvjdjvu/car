@@ -12,6 +12,8 @@ from threading import Thread
 from socketserver import ThreadingMixIn 
 from datetime import datetime
 
+from helper.log import log
+
 ###import RPi.GPIO as GPIO
 import PWM
 
@@ -47,27 +49,27 @@ class ServerThread(Thread, conf.conf):
             self.TE.newStatus(carStatusDefault.statusCar)
 
     def run(self):
-        dt_last_data = time.time()
         # Защита от частого срабатывания, проверяем на потерю связи каждые dt_check сек.
-        dt_check = 0.5
+        dt_last_data = time.time()
         
         while True:
             data = None
+            dt_now = time.time()
             
             if self.tcpServer.poll(self.tcpServerTimeWait, zmq.POLLIN):
                 data = self.tcpServer.recv(zmq.NOBLOCK).decode()
             
             if data == None :
-                dt_now = time.time()
                 dt_diff = dt_now - dt_last_data
 
-                if (dt_diff > dt_check) :
+                if (dt_diff >= conf.conf.dt_check) :
                     # Вслучае потери связи, машинка останавливается.
                     self.TE.newStatus(carStatusDefault.statusCar)
-                
-                dt_last_data = dt_now
+                    log.Print('[warning]: signal from the remote lost')
                 
                 continue
+            else :
+                dt_last_data = dt_now
             
             # Обработка полученных команд.
             data = data.replace('}{', '}\n\n{')
@@ -86,7 +88,7 @@ class ServerThread(Thread, conf.conf):
 
             # Т.к. в цикле мы избавляемся от флуда команд. 
             # Здесь Будет передано последнее актуальное состояние.
-            print(carStatus.statusCar)
+            log.Print('[info]: data: ', carStatus.statusCar)
             self.TE.newStatus(carStatus.statusCar)
 
 if __name__ == '__main__':

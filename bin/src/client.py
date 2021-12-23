@@ -27,6 +27,8 @@ import conf
 import helper
 import subprocess
 
+from helper.log import log
+
 import GHKeyboard
 import Joystick
 import WifiCheck
@@ -250,33 +252,46 @@ class ClientThread(QThread, conf.conf):
        
         #self.timerCheckConnection.start(2 * self.tcpClientTimeWait)
         
-    def run(self): 
+    def run(self):
+        # Защита от частого срабатывания, проверяем на потерю связи каждые dt_check сек.
+        dt_last_data = time.time()
         
         while True:
+            dt_now = time.time()
+            
             try:
                 data = self.tcpClient.recv().decode()
                 if data == None :
-                    print("data == None Y-")
                     self.signalDisplayPrint.emit("У-")
                     carStatus.statusRemote['network']['control'] = False
+                    log.Print('[warning]: signal from the car lost')
                 
                     self.flagCheckConnection = False
+                    
+                    dt_diff = dt_now - dt_last_data
                 else :
                     # Получено сообщение, уставналиваем флаг в True
                     self.signalDisplayPrint.emit("У+")
                     carStatus.statusRemote['network']['control'] = True
+                    log.Print('[info]: data: ', data)
                 
                     self.flagCheckConnection = True
+                    
+                    dt_last_data = dt_now
                 
             except zmq.ZMQError as e:
+                dt_diff = dt_now - dt_last_data
+                
                 if e.errno == zmq.EAGAIN:
                     # выпадаем по timeout, скорее всего нет связи
                     pass
                 
-                self.signalDisplayPrint.emit("У-")
-                carStatus.statusRemote['network']['control'] = False
+                if (dt_diff >= conf.conf.dt_check) :
+                    self.signalDisplayPrint.emit("У-")
+                    carStatus.statusRemote['network']['control'] = False
+                    log.Print('[warning]: signal from the car lost')
                 
-                self.flagCheckConnection = False
+                    self.flagCheckConnection = False
             
                 # Посылаем текущее состояние пульта, как проверку связи.
                 cmd = {}

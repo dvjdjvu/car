@@ -6,9 +6,9 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 # Import the ADS1x15 module.
 try :
-    import Adafruit_ADS1x15 as Adafruit
+    import Adafruit_ADS1x15
 except (ImportError, RuntimeError) :
-    import emulator as Adafruit
+    import emulator as Adafruit_ADS1x15
     
 
 from HardwareSetting import HardwareSetting 
@@ -28,7 +28,7 @@ class Joystick(QThread, HardwareSetting):
     def __init__(self, parent = None):
         QThread.__init__(self, parent) 
          
-        self.adc = Adafruit.ADS1115()
+        self.adc = Adafruit_ADS1x15.ADS1115()
         self.GAIN = 1
         
     def run(self):

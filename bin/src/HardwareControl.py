@@ -83,9 +83,10 @@ class HardwareControl():
     def lightTest(self):
         
         ps = .5
+        countLightTest = 3
         
         # 3-е кратное мигание фарами на запуске, показывает успешный запуск
-        for i in range(3) :
+        for i in range(countLightTest) :
         
             GPIO.output(self.gpioLight, GPIO.HIGH) # передний
             GPIO.output(self.gpioLightBack, GPIO.HIGH) # задний

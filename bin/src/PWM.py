@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 #-*- coding: utf-8 -*-
 
+import math
+from helper.log import log
+
 try :
-    import Adafruit_PCA9685 as Adafruit
+    import Adafruit_PCA9685
 except (ImportError, RuntimeError) :
-    import emulator as Adafruit
+    import emulator as Adafruit_PCA9685
 
 ###
 ## !!! Частота должна быть 50 гц, так как серво машинка работает на ней, 
@@ -18,7 +21,7 @@ class PWM_Servo:
     
     def __init__(self, pin):
         self.pin = pin
-        self.pwm = Adafruit.PCA9685()
+        self.pwm = Adafruit_PCA9685.PCA9685()
 
     def set(self, val):
         """
@@ -31,7 +34,7 @@ class PWM_Servo:
         try:
             self.pwm.set_pwm(self.pin, 0, int(val))
         except Exception as error:
-            return
+            log.Print('[error]: PWM_Servo set({})'.format(val))
     
     def setFreq(self, freq = 50):
         """
@@ -41,7 +44,10 @@ class PWM_Servo:
             freq: Частота в герцах.
         """
         
-        self.pwm.set_pwm_freq(freq)
+        try:
+            self.pwm.set_pwm_freq(freq)
+        except Exception as error:
+            log.Print('[error]: PWM_Servo setFreq({})'.format(freq))
    
 class PWM_L298N_Motor:
     """
@@ -58,20 +64,23 @@ class PWM_L298N_Motor:
         self.in3 = in3
         self.in4 = in4
         self.enb = enb
-        self.pwm = Adafruit.PCA9685()
+        self.pwm = Adafruit_PCA9685.PCA9685()
 
     def stop(self):
         """
         Остановка мотора.
         """
         
-        self.pwm.set_pwm(self.ena, 0, self.LOW)
-        self.pwm.set_pwm(self.enb, 0, self.LOW)
+        try:
+            self.pwm.set_pwm(self.ena, 0, self.LOW)
+            self.pwm.set_pwm(self.enb, 0, self.LOW)
 
-        self.pwm.set_pwm(self.in1, 0, self.LOW)
-        self.pwm.set_pwm(self.in4, 0, self.LOW)
-        self.pwm.set_pwm(self.in2, 0, self.LOW)
-        self.pwm.set_pwm(self.in3, 0, self.LOW)
+            self.pwm.set_pwm(self.in1, 0, self.LOW)
+            self.pwm.set_pwm(self.in4, 0, self.LOW)
+            self.pwm.set_pwm(self.in2, 0, self.LOW)
+            self.pwm.set_pwm(self.in3, 0, self.LOW)
+        except Exception as error:
+            log.Print('[error]: PWM_L298N_Motor stop()')
 
     def forward(self, speed):
         """
@@ -84,13 +93,16 @@ class PWM_L298N_Motor:
         # защита от выходы за диапазоны
         speed = self.sign(speed) * abs(speed)
         
-        self.pwm.set_pwm(self.ena, 0, int(speed * self.HIGH))
-        self.pwm.set_pwm(self.enb, 0, int(speed * self.HIGH))
+        try:
+            self.pwm.set_pwm(self.ena, 0, int(speed * self.HIGH))
+            self.pwm.set_pwm(self.enb, 0, int(speed * self.HIGH))
         
-        self.pwm.set_pwm(self.in1, 0, self.HIGH)
-        self.pwm.set_pwm(self.in4, 0, self.HIGH)
-        self.pwm.set_pwm(self.in2, 0, self.LOW)
-        self.pwm.set_pwm(self.in3, 0, self.LOW)        
+            self.pwm.set_pwm(self.in1, 0, self.HIGH)
+            self.pwm.set_pwm(self.in4, 0, self.HIGH)
+            self.pwm.set_pwm(self.in2, 0, self.LOW)
+            self.pwm.set_pwm(self.in3, 0, self.LOW)
+        except Exception as error:
+            log.Print('[error]: PWM_L298N_Motor forward({})'.format(speed))
         
     def back(self, speed):
         """
@@ -103,13 +115,16 @@ class PWM_L298N_Motor:
         # защита от выходы за диапазоны
         speed = self.sign(speed) * abs(speed)
         
-        self.pwm.set_pwm(self.ena, 0, int(speed * self.HIGH))
-        self.pwm.set_pwm(self.enb, 0, int(speed * self.HIGH))
+        try:
+            self.pwm.set_pwm(self.ena, 0, int(speed * self.HIGH))
+            self.pwm.set_pwm(self.enb, 0, int(speed * self.HIGH))
         
-        self.pwm.set_pwm(self.in1, 0, self.LOW)
-        self.pwm.set_pwm(self.in4, 0, self.LOW)
-        self.pwm.set_pwm(self.in2, 0, self.HIGH)
-        self.pwm.set_pwm(self.in3, 0, self.HIGH)        
+            self.pwm.set_pwm(self.in1, 0, self.LOW)
+            self.pwm.set_pwm(self.in4, 0, self.LOW)
+            self.pwm.set_pwm(self.in2, 0, self.HIGH)
+            self.pwm.set_pwm(self.in3, 0, self.HIGH)
+        except Exception as error:
+            log.Print('[error]: PWM_L298N_Motor back({})'.format(speed))
     
     def setFreq(self, freq = 50):
         """
@@ -119,7 +134,10 @@ class PWM_L298N_Motor:
             freq: Частота в герцах.
         """
         
-        self.pwm.set_pwm_freq(freq)
+        try:
+            self.pwm.set_pwm_freq(freq)
+        except Exception as error:
+            log.Print('[error]: PWM_L298N_Motor setFreq({})'.format(freq))
         
     def sign(self, a):
         """

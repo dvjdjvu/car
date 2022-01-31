@@ -369,7 +369,7 @@ class Remote(conf.conf):
         clientThread = ClientThread()
         keyboard = GHKeyboard.GHK()
         joystick = Joystick.Joystick()
-        wifiCheck = WifiCheck.WifiCheck()
+        wifiCheck = WifiCheck.WifiCheck('djvu-car-pi3')
         
         clientThread.signalDisplayPrint.connect(player.displayPrint)
         keyboard.signalSendCmd.connect(clientThread.sendCmd)

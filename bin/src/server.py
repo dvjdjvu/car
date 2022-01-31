@@ -34,14 +34,13 @@ class ServerThread(Thread, conf.conf):
     
     def __init__(self): 
         Thread.__init__(self) 
-        self.TE = None
+        
+        # Управление через tickEvent
+        self.TE = tickEvent.tickEvent()
         
         context = zmq.Context()
         self.tcpServer = context.socket(zmq.PAIR)
         self.tcpServer.bind("tcp://" + conf.conf.ServerIP + ":" + str(conf.conf.controlServerPort))
-        
-        # Управление через tickEvent
-        self.TE = tickEvent.tickEvent()
         
     def __del__(self):
         # Потеря связи или прекращение работы, отключение машинки
@@ -51,6 +50,8 @@ class ServerThread(Thread, conf.conf):
     def run(self):
         # Защита от частого срабатывания, проверяем на потерю связи каждые dt_check сек.
         dt_last_data = time.time()
+        
+        cmd = None
         
         while True:
             data = None
@@ -80,15 +81,16 @@ class ServerThread(Thread, conf.conf):
                     cmd = json.loads(i)
                 except:                
                     continue
+            
+            carStatus.statusCar = cmd
+            # Ответ клиенту, о том что посылка получена (отправляем что и приняли).
+            self.tcpServer.send_string(json.dumps(cmd, ensure_ascii=False))
                 
-                carStatus.statusCar = cmd
-                self.tcpServer.send_string(json.dumps(cmd, ensure_ascii=False))
-                
-                #print(cmd)
+            #print(cmd)
 
             # Т.к. в цикле мы избавляемся от флуда команд. 
             # Здесь Будет передано последнее актуальное состояние.
-            log.Print('[info]: data: ', carStatus.statusCar)
+            log.Print('[info]: data:', carStatus.statusCar)
             self.TE.newStatus(carStatus.statusCar)
 
 if __name__ == '__main__':

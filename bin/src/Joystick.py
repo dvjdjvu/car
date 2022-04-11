@@ -40,12 +40,12 @@ class Joystick(QThread, HardwareSetting):
             
             if X > HardwareSetting.xZero :
                 X = X - HardwareSetting.xZero
-            else :
+            elif X < -1 * HardwareSetting.xZero:
                 X = -1 * (HardwareSetting.xZero - X)
             
             if Y > HardwareSetting.yZero :
                 Y = Y - HardwareSetting.yZero
-            else :
+            elif Y < -1 * HardwareSetting.yZero :
                 Y = -1 * (HardwareSetting.yZero - Y)
             
             if (abs(X) < self.deltaMax) :
@@ -67,15 +67,15 @@ class Joystick(QThread, HardwareSetting):
             
             if SX > HardwareSetting.xZero :
                 SX = SX - HardwareSetting.xZero
-            else :
+            elif SX < -1 * HardwareSetting.xZero:
                 SX = -1 * (HardwareSetting.xZero - SX)
             
-            # Джойстик стоит задом на перед.
             if SY > HardwareSetting.yZero :
                 SY = SY - HardwareSetting.yZero
-            else :
+            elif SY < -1 * HardwareSetting.yZero :
                 SY = -1 * (HardwareSetting.yZero - SY)
             
+            # Джойстик стоит задом на перед, поэтому инвертируем значение.
             SY = -1 * SY
             
             if (abs(SX) < self.deltaMax) :

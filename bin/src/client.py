@@ -47,6 +47,9 @@ class VideoWindow(QMainWindow, conf.conf):
         # Create a widget for window contents
         self.mainWidget = QWidget(self.centralWidget())
         self.videoWidget = QVideoWidget()
+        self.videoWidget.setFixedWidth(480)
+        self.videoWidget.setFixedHeight(360)
+        
         self.setCentralWidget(self.mainWidget)
 
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.LowLatency)
@@ -264,7 +267,7 @@ class ClientThread(QThread, conf.conf):
                 if data == None :
                     self.signalDisplayPrint.emit("У-")
                     carStatus.statusRemote['network']['control'] = False
-                    log.Print('[warning]: signal from the car lost')
+                    log.Print('[warning]: signal losts from the car')
                 
                     self.flagCheckConnection = False
                     
@@ -289,7 +292,7 @@ class ClientThread(QThread, conf.conf):
                 if (dt_diff >= conf.conf.dt_check) :
                     self.signalDisplayPrint.emit("У-")
                     carStatus.statusRemote['network']['control'] = False
-                    log.Print('[warning]: signal from the car lost')
+                    log.Print('[warning]: signal losts from the car')
                 
                     self.flagCheckConnection = False
             
@@ -299,7 +302,7 @@ class ClientThread(QThread, conf.conf):
                 self.sendCmd(cmd)
             
     def sendCmd(self, cmd):        
-        #print('Send data: ', cmd)
+        print('Send data: ', cmd)
         #print("sendCmd self.tcpClient", self.tcpClient)
         
         # Свет.
@@ -335,8 +338,8 @@ class ClientThread(QThread, conf.conf):
             carStatus.statusRemote['network']['control'] = False
             
             self.flagCheckConnection = False
-            
-        print(carStatus.statusRemote)
+        
+        print('carStatus.statusRemote: ', carStatus.statusRemote)
             
         self.mutex.unlock()
         
@@ -361,8 +364,8 @@ class Remote(conf.conf):
         player = VideoWindow()
         player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
         
-        #player.show()
-        player.showFullScreen()
+        player.show()
+        #player.showFullScreen()
         
         player.setCursor(Qt.BlankCursor)
         

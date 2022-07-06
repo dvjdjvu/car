@@ -10,6 +10,9 @@ CAR - программа управления машинкой на дистан
 import sys
 sys.path.append('src')
 sys.path.append('../conf')
+sys.path.append('web')
+
+import RemoteWeb
 
 import os
 import time
@@ -37,10 +40,14 @@ def ProcessingInit(conf):
     # Видео сервер.
     streamerThread = streamer.StreamerThread()
     streamerThread.start()
+    
+    # Web сервер управления.
+    remoteWeb = RemoteWeb.RemoteWeb()
+    remoteWeb.start()
         
     serverThread.join()
     streamerThread.wait()
-        
+    remoteWeb.join()
 
 def ProcessingWatchdog(): 
     """

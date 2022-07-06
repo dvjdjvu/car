@@ -35,8 +35,8 @@ class Joystick(QThread, HardwareSetting):
         while True:
             
             # Джойстик поворота колес
-            X = self.adc.read_adc(0, gain=self.GAIN) / HardwareSetting.valueStep
-            Y = self.adc.read_adc(1, gain=self.GAIN) / HardwareSetting.valueStep
+            X = self.adc.read_adc(2, gain=self.GAIN) / HardwareSetting.valueStep
+            Y = self.adc.read_adc(3, gain=self.GAIN) / HardwareSetting.valueStep
             
             if X > HardwareSetting.xZero :
                 X = X - HardwareSetting.xZero
@@ -62,8 +62,8 @@ class Joystick(QThread, HardwareSetting):
             self.y = Y
             
             # Джойстик скорости движения
-            SX = self.adc.read_adc(2, gain=self.GAIN) / HardwareSetting.valueStep
-            SY = self.adc.read_adc(3, gain=self.GAIN) / HardwareSetting.valueStep
+            SX = self.adc.read_adc(0, gain=self.GAIN) / HardwareSetting.valueStep
+            SY = self.adc.read_adc(1, gain=self.GAIN) / HardwareSetting.valueStep
             
             if SX > HardwareSetting.xZero :
                 SX = SX - HardwareSetting.xZero

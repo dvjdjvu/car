@@ -66,7 +66,7 @@ class ServerThread(Thread, conf.conf):
                 if (dt_diff >= conf.conf.dt_check) :
                     # Вслучае потери связи, машинка останавливается.
                     self.TE.newStatus(carStatusDefault.statusCar)
-                    log.Print('[warning]: signal from the remote lost')
+                    log.Print('[warning]: no signal from control device')
                 
                 continue
             else :

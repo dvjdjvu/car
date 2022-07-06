@@ -7,12 +7,17 @@ CAR - программа управления машинкой на дистан
 
 import sys
 sys.path.append('../src')
+sys.path.append('../../conf')
 
+import conf
 from CarStatus import * 
 
+from threading import Thread 
+from PyQt5.QtCore import QThread, pyqtSignal
+
 from flask import Flask, render_template, Response, request
+from flask_socketio import SocketIO, emit
 import cv2
-import serial
 import threading
 import time
 import json
@@ -27,7 +32,7 @@ camera = cv2.VideoCapture(0)  # веб камера
 speedX, speedY = 0, 0  # глобальные переменные положения джойстика с web-страницы
 turnX, turnY = 0, 0  # глобальные переменные положения джойстика с web-страницы
 light = True
-winch, winchM, winchP = 0, 0, 0  # глобальные переменные положения джойстика с web-страницы
+winchM, winchP = 0, 0  # глобальные переменные положения джойстика с web-страницы
 
 def getFramesGenerator():
     """ Генератор фреймов для вывода в веб-страницу, тут же можно поиграть с openCV"""
@@ -35,13 +40,29 @@ def getFramesGenerator():
         time.sleep(0.01)    # ограничение fps (если видео тупит, можно убрать)
         success, frame = camera.read()  # Получаем фрейм с камеры
         if success:
-            frame = cv2.resize(frame, (640, 360), interpolation=cv2.INTER_AREA)  # уменьшаем разрешение кадров (если видео тупит, можно уменьшить еще больше)
+            frame = cv2.resize(frame, (conf.conf.VideoWidth, conf.conf.VideoHeight), interpolation=cv2.INTER_AREA)  # уменьшаем разрешение кадров (если видео тупит, можно уменьшить еще больше)
             # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)   # перевод изображения в градации серого
             # _, frame = cv2.threshold(frame, 127, 255, cv2.THRESH_BINARY)  # бинаризуем изображение
             _, buffer = cv2.imencode('.jpg', frame)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
+socketio = SocketIO(app, logge=True)
+clients = 0
+@socketio.on("connect", namespace="/")
+def connect():
+    global clients
+    print("fired connect")
+    clients += 1
+    #emit("users", {"user_count": clients}, broadcast=True)
+ 
+
+@socketio.on("disconnect", namespace="/")
+def disconnect():
+    global clients
+    print("fired disconnect")
+    clients -= 1
+    #emit("users", {"user_count": clients}, broadcast=True)
 
 @app.route('/video_feed')
 def video_feed():
@@ -95,16 +116,61 @@ def _winch_p():
     winchP = int(request.args.get('winch'))
     return '', 200, {'Content-Type': 'text/plain'}
 
-if __name__ == '__main__':
-    # пакет, посылаемый на робота
-    statusRemote = {
-        'network': {'wifi': True, 'video': True, 'control': True},
-        'car': {'speed': 0, 'turn': 0, 'light': False, 'winch': 0}
-    }
+class RemoteWeb(Thread, conf.conf):
+    def __init__(self): 
+        Thread.__init__(self) 
+        
+    def __del__(self):
+        pass
+    
+    def sender(self):
+        """ функция цикличной отправки пакетов по uart """
+        global speedX, speedY
+        global turnX, turnY
+        global light
+        global winchM, winchP
+        
+        while True:
+            #time.sleep(1 / sendFreq)
+            
+            # пакет, посылаемый на робота
+            statusRemote = carStatus.statusRemote
+            
+            # не используются, т.к. управление теперь на стороне сервера
+            statusRemote['network'][''] = True
+            statusRemote['network'][''] = True
+            statusRemote['network'][''] = True
+            
+            statusRemote['car']['speed'] = speedY / 100.0
+            statusRemote['car']['turn'] = turnX
+            
+            statusRemote['car']['light'] = light
+            
+            if (winchM != 0) :
+                statusRemote['car']['winch'] = winchM
+            elif (winchP != 0) :
+                statusRemote['car']['winch'] = winchP
+            else :
+                statusRemote['car']['winch'] = 0
+            
+            
+            print(json.dumps(statusRemote, ensure_ascii=False))
 
-    # параметры робота
-    speedScale = 0.65  # определяет скорость в процентах (0.50 = 50%) от максимальной абсолютной
-    maxAbsSpeed = 100  # максимальное абсолютное отправляемое значение скорости
+            time.sleep(1)
+            
+            # пример посылки управления
+            # data: {'car': {'speed': -0.9979622641509434, 'winch': 0, 'turn': 88, 'light': True}, 'network': {'control': True, 'wifi': True, 'video': False}}
+    
+    def run(self):
+        # запускаем тред отправки пакетов управления
+        threading.Thread(target=self.sender, daemon=True).start()
+
+        # запускаем flask приложение
+        app.run(debug=False, host=conf.conf.clientweb_ip, port=conf.conf.clientweb_port)
+        #socketio.run(app, host=conf.conf.clientweb_ip, port=conf.conf.clientweb_port, debug=True, use_reloader=True)
+
+if __name__ == '__main__':
+    
     sendFreq = 10  # слать 10 пакетов в секунду
 
     parser = argparse.ArgumentParser()
@@ -123,35 +189,37 @@ if __name__ == '__main__':
         global winch
         
         while True:
-            
-            statusRemote
-            
-            #serialPort.write(json.dumps(msg, ensure_ascii=False).encode("utf8"))  # отправляем пакет в виде json файла
             #time.sleep(1 / sendFreq)
             
-            print(carStatus.statusCar)
-            print("speed:", speedY, speedX, ", turn:", turnY, turnX, ", light:", light, ", winch:", winchM, winchP)
+            # пакет, посылаемый на робота
+            statusRemote = carStatus.statusRemote
+            
+            # не используются, т.к. управление теперь на стороне сервера
+            statusRemote['network'][''] = True
+            statusRemote['network'][''] = True
+            statusRemote['network'][''] = True
+            
+            statusRemote['car']['speed'] = speedY / 100.0
+            statusRemote['car']['turn'] = turnX
+            
+            statusRemote['car']['light'] = light
+            
+            if (winchM != 0) :
+                winch = winchM
+            elif (winchP != 0) :
+                winch = winchP
+            else :
+                winch = 0
+            
+            statusRemote['car']['winch'] = winch
+            
+            #print("speed:", speedY, speedX, ", turn:", turnY, turnX, ", light:", light, ", winch:", winchM, winchP)
+            print(json.dumps(statusRemote, ensure_ascii=False))
             #print(json.dumps(msg, ensure_ascii=False).encode("utf8"))
             time.sleep(1)
             
             # data: {'car': {'speed': -0.9979622641509434, 'winch': 0, 'turn': 88, 'light': True}, 'network': {'control': True, 'wifi': True, 'video': False}}
 
-    threading.Thread(target=sender, daemon=True).start()    # запускаем тред отправки пакетов по uart с демоном
+    threading.Thread(target=sender, daemon=True).start()    # запускаем тред отправки пакетов управления
 
     app.run(debug=False, host=args.ip, port=args.port)   # запускаем flask приложение
-
-'''
-background-color: #04AA6D; /* Green */
-            border: none;
-            color: white;
-            padding: 50px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 32px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 50%;
-            position: absolute;
-            left: 60px;
-'''

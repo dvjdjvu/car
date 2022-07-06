@@ -47,8 +47,8 @@ class VideoWindow(QMainWindow, conf.conf):
         # Create a widget for window contents
         self.mainWidget = QWidget(self.centralWidget())
         self.videoWidget = QVideoWidget()
-        self.videoWidget.setFixedWidth(480)
-        self.videoWidget.setFixedHeight(360)
+        self.videoWidget.setFixedWidth(conf.conf.ScreenWidth)
+        self.videoWidget.setFixedHeight(conf.conf.ScreenHeight)
         
         self.setCentralWidget(self.mainWidget)
 
@@ -64,9 +64,23 @@ class VideoWindow(QMainWindow, conf.conf):
         self.positionSlider.setRange(0, 0)
         self.positionSlider.sliderMoved.connect(self.setPosition)
 
+        rec = QApplication.desktop().screenGeometry()
+        height = rec.height()
+        width = rec.width()
+
         layoutVideo = QVBoxLayout()
         layoutVideo.addWidget(self.videoWidget)
-        layoutVideo.setContentsMargins(0,0,0,0)
+        
+        print(height, conf.conf.ScreenHeight)
+        print(width, conf.conf.ScreenWidth)
+        print((height - conf.conf.ScreenHeight) / 2)
+        print((width - conf.conf.ScreenWidth) / 2)
+        
+        #conf.conf.ScreenHeight - height / 2
+        #conf.conf.ScreenWidth - width / 2
+        #layoutVideo.addStretch()
+        layoutVideo.setContentsMargins((width - conf.conf.ScreenWidth) / 2, 0, 0, 0)
+        #layoutVideo.setContentsMargins((width - conf.conf.ScreenWidth) / 2, (height - conf.conf.ScreenHeight) / 2, 0, 0)
         layoutVideo.setSpacing(0)
         
         # Set widget to contain window contents
@@ -77,18 +91,19 @@ class VideoWindow(QMainWindow, conf.conf):
         self.labelVideoStatus.setGeometry(0, 0, self.textSize, self.textSize)
         #self.labelVideoStatus.setAttribute(Qt.WA_TranslucentBackground)
         self.labelVideoStatus.raise_()
-        self.displayPrint("В-")
         
         self.labelControlStatus = QLabel(self.videoWidget)
         self.labelControlStatus.setGeometry(0, 0, self.textSize, self.textSize)
         self.labelControlStatus.setStyleSheet("QLabel { background-color : black; color : red; font-size:" + str(self.textSize) + "px}")
         self.labelControlStatus.raise_()
-        self.displayPrint("У-")
         
         self.labelWifiStatus = QLabel(self.videoWidget)
         self.labelWifiStatus.setGeometry(0, 0, self.textSize, self.textSize)
         self.labelWifiStatus.setStyleSheet("QLabel { background-color : black; color : red; font-size:" + str(self.textSize) + "px}")
         self.labelWifiStatus.raise_()
+        
+        self.displayPrint("В-")
+        self.displayPrint("У-")
         self.displayPrint("wifi-")
         
         self.mediaPlayer.setMedia(QMediaContent(QUrl("http://{}:{}/?action=stream".format(conf.conf.ServerIP, conf.conf.videoServerPort))))
@@ -166,7 +181,7 @@ class VideoWindow(QMainWindow, conf.conf):
             message += 'self.mediaPlayer.currentMedia().canonicalUrl()'
 
     def displayPrint(self, _str) :
-        #print(_str)
+        print(_str)
         
         if _str == 'У-' :
             self.labelControlStatus.setText("У")
@@ -364,8 +379,8 @@ class Remote(conf.conf):
         player = VideoWindow()
         player.resize(conf.conf.VideoWidth, conf.conf.VideoHeight)
         
-        player.show()
-        #player.showFullScreen()
+        #player.show()
+        player.showFullScreen()
         
         player.setCursor(Qt.BlankCursor)
         

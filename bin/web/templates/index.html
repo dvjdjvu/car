@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Car</title>
+	<script src="/static/joy.js"></script>
+	<style>
+	html{
+            width: 95%;
+            height: 95%;
+        }
+
+        body {
+            position:absolute; top:0; bottom:0; right:0; left:0;
+            margin: 0;
+            background-color: #000000;
+        }
+
+        #videoContainer {
+            background-color: #00000000;
+        }
+
+        #video {
+            width: 95vw;
+            height: 95vh;
+            display: block;
+            margin: auto;
+        }
+
+        #logo {
+            width: 7%;
+            height: auto;
+            position: absolute;
+            padding: 0px;
+            top: 3%;
+            left: 1%;
+        }
+
+        #joySpeed {
+            width: max(33vw, 33vh);
+            height: max(33vw, 33vh);
+            max-width: 400px;
+            max-height: 400px;
+            position: absolute;
+            right: 0%;
+            bottom: 0%;
+            right: 0%;
+        }
+
+        #joyTurn {
+            width: max(33vw, 33vh);
+            height: max(33vw, 33vh);
+            max-width: 400px;
+            max-height: 400px;
+            position: absolute;
+            left: 0%;
+            bottom: 0%;
+            right: 0%;
+	}
+        
+        #buttonLight {
+            background-color: #3e8e41; /* Green */
+            width: max(22vw, 22vh);
+            height: max(22vw, 22vh);
+            max-width: 150px;
+            max-height: 150px;
+            position: absolute;
+            top:70%;
+            left: 22%;
+            bottom: 0%;
+            right: 0%;
+            border-radius: 50%;
+        }
+        
+        #buttonLight:active {
+            background-color: #04AA6D;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+        
+        #buttonWinchM {
+            background-color: #3e8e41; /* Green */
+            width: max(22vw, 22vh);
+            height: max(22vw, 22vh);
+            max-width: 150px;
+            max-height: 150px;
+            position: absolute;
+            top:70%;
+            left: 60%;
+            bottom: 0%;
+            right: 0%;
+            border-radius: 50%;
+        }
+        
+        #buttonWinchM:active {
+            background-color: #04AA6D;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+        
+        #buttonWinchP {
+            background-color: #3e8e41; /* Green */
+            width: max(22vw, 22vh);
+            height: max(22vw, 22vh);
+            max-width: 150px;
+            max-height: 150px;
+            position: absolute;
+            top:70%;
+            left: 70%;
+            bottom: 0%;
+            right: 0%;
+            border-radius: 50%;
+        }
+        
+        #buttonWinchP:active {
+            background-color: #04AA6D;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+        
+	</style>
+</head>
+<body>
+	<div id="videoContainer"><img id="video" src="{{ url_for('video_feed') }}"></div>
+        
+	<div id="joySpeed"></div>
+	<script type="text/javascript">
+            var joyParamSpeed = {"title": "joystickSpeed", 
+				 "autoReturnToCenter": true, 
+				 "internalFillColor": "#FF0000", 
+				 "externalStrokeColor": "#800000", 
+				 "externalLineWidth": "5"};
+            var joySpeed = new JoyStick('joySpeed', joyParamSpeed);
+		
+            function speed(speedX, speedY){
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("GET", "speed?speedX=" + speedX + "&speedY=" + speedY, true); 
+                xhttp.send();
+            }
+		
+            setInterval(function(){speed(joySpeed.GetX(), joySpeed.GetY());}, 50);
+	</script>
+        
+        
+        <div id="buttonLight" onclick="lightChange()"></div>
+        <script type="text/javascript">
+            var val_light = false;
+            
+            function lightChange(){
+                if (val_light) 
+                    val_light = false;
+                else 
+                    val_light = true;
+            }
+            
+            function lightSend(){
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("GET", "light?light=" + val_light, true); 
+                xhttp.send();
+            }
+
+            setInterval(function(){lightSend();}, 50);
+        </script>
+        
+        <div id="buttonWinchM" onclick="winchSendM()"></div>
+        <script type="text/javascript">
+            var val_winch_m = 0;
+            
+            var btn_m = document.getElementById('buttonWinchM');
+            btn_m.addEventListener('keydown', function(data) {
+                    val_winch_m = -1;
+                });
+
+            btn_m.addEventListener('keyup', function(data) {
+                    val_winch_m = 0;
+                });
+
+            btn_m.addEventListener('mousedown', function(data) {
+                    val_winch_m = -1;
+                });
+
+            btn_m.addEventListener('mouseup', function(data) {
+                    val_winch_m = 0;
+                });
+            
+            function winchSendM(){              
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("GET", "winch_m?winch=" + val_winch_m, true); 
+                xhttp.send();
+            }
+            
+            setInterval(function(){winchSendM();}, 50);
+        </script>
+        
+        <div id="buttonWinchP" onclick="winchSendP()"></div>
+        <script type="text/javascript">
+            var val_winch_p = 0;
+            
+            var btn_p = document.getElementById('buttonWinchP');
+            btn_p.addEventListener('keydown', function(data) {
+                    val_winch_p = 1;
+                });
+
+            btn_p.addEventListener('keyup', function(data) {
+                    val_winch_p = 0;
+                });
+
+            btn_p.addEventListener('mousedown', function(data) {
+                    val_winch_p = 1;
+                });
+
+            btn_p.addEventListener('mouseup', function(data) {
+                    val_winch_p = 0;
+                });
+            
+            function winchSendP(){              
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("GET", "winch_p?winch=" + val_winch_p, true); 
+                xhttp.send();
+            }
+            
+            setInterval(function(){winchSendP();}, 50); 
+        </script>
+        
+        
+        <div id="joyTurn"></div>
+        <script type="text/javascript">
+            var joyParamTurn = {"title": "joystickTurn", 
+				"autoReturnToCenter": true, 
+				"internalFillColor": "#FF0000", 
+				"externalStrokeColor": "#800000", 
+				"externalLineWidth": "5"};
+                                            
+            var joyTurn = new JoyStick('joyTurn', joyParamTurn);
+
+            function turn(turnX, turnY){
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("GET", "turn?turnX=" + turnX + "&turnY=" + turnY, true); 
+                xhttp.send();
+            }
+                
+            setInterval(function(){turn(joyTurn.GetX(), joyTurn.GetY());}, 50);
+	</script>
+        
+</body>
+</html>

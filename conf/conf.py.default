@@ -8,18 +8,26 @@ class conf :
         self.Type = "server" # "server"/"client"
     
         self.VideoServerType = 'm' # 'p'
-        self.VideoUrl = "http://192.168.2.71:8000/?action=stream"
+        self.VideoUrl = "http://192.168.99.1:8000/?action=stream"
     
-        self.ServerIP = "192.168.2.71"
+        self.ServerIP = "192.168.99.1"
         self.videoServerPort = 8000
         self.controlServerPort = 8001
         self.ServerBufferSize = 200
+        self.webServerPort = 80
     
         # Video settings
-        self.VideoRate = 25
-        self.VideoWidth = 640
-        self.VideoHeight = 480
+        self.VideoRate = 10
+        self.VideoWidth = 480
+        self.VideoHeight = 320
     
         self.timeRecconect = 3
+
+        dt_check = 0.6
+
+        ScreenWidth = 640
+        ScreenHeight = 480
+
+        controller = 'web_controller' # 'remote_controller'
     
     

@@ -34,20 +34,22 @@ def ProcessingInit(conf):
     """
     
     # Обработка команд.
-    serverThread = server.ServerThread()
-    serverThread.start()
+    if (conf.controller == 'web_controller') :
+        # Web сервер управления.
+        remoteWeb = RemoteWeb.RemoteWeb()
+        remoteWeb.start()
+        remoteWeb.join()
+    else :
+        # Пульт управления.
+        serverThread = server.ServerThread()
+        serverThread.start()
         
-    # Видео сервер.
-    streamerThread = streamer.StreamerThread()
-    streamerThread.start()
-    
-    # Web сервер управления.
-    remoteWeb = RemoteWeb.RemoteWeb()
-    remoteWeb.start()
+        # Видео сервер.
+        streamerThread = streamer.StreamerThread()
+        streamerThread.start()
         
-    serverThread.join()
-    streamerThread.wait()
-    remoteWeb.join()
+        serverThread.join()
+        streamerThread.wait()
 
 def ProcessingWatchdog(): 
     """

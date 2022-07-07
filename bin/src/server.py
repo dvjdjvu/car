@@ -39,8 +39,11 @@ class ServerThread(Thread, conf.conf):
         self.TE = tickEvent.tickEvent()
         
         context = zmq.Context()
-        self.tcpServer = context.socket(zmq.PAIR)
-        self.tcpServer.bind("tcp://" + conf.conf.ServerIP + ":" + str(conf.conf.controlServerPort))
+        try:
+            self.tcpServer = context.socket(zmq.PAIR)
+            self.tcpServer.bind("tcp://" + conf.conf.ServerIP + ":" + str(conf.conf.controlServerPort))
+        except:                
+            log.Print('[error]: bind ', conf.conf.ServerIP + ":" + str(conf.conf.controlServerPort))
         
     def __del__(self):
         # Потеря связи или прекращение работы, отключение машинки

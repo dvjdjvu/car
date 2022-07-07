@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+#-*- coding: utf-8 -*-
+
 """
 Created on 12.07.2019
 
@@ -9,14 +12,15 @@ import sys
 sys.path.append('../src')
 sys.path.append('../../conf')
 
+from helper.log import log
+
 import conf
 from CarStatus import * 
+import tickEvent
 
 from threading import Thread 
-from PyQt5.QtCore import QThread, pyqtSignal
 
 from flask import Flask, render_template, Response, request
-from flask_socketio import SocketIO, emit
 import cv2
 import threading
 import time
@@ -25,8 +29,8 @@ import argparse
 import logging
 
 app = Flask(__name__)
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+logger = logging.getLogger('werkzeug')
+logger.setLevel(logging.ERROR)
 camera = cv2.VideoCapture(0)  # веб камера
 
 speedX, speedY = 0, 0  # глобальные переменные положения джойстика с web-страницы
@@ -46,23 +50,6 @@ def getFramesGenerator():
             _, buffer = cv2.imencode('.jpg', frame)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-
-socketio = SocketIO(app, logge=True)
-clients = 0
-@socketio.on("connect", namespace="/")
-def connect():
-    global clients
-    print("fired connect")
-    clients += 1
-    #emit("users", {"user_count": clients}, broadcast=True)
- 
-
-@socketio.on("disconnect", namespace="/")
-def disconnect():
-    global clients
-    print("fired disconnect")
-    clients -= 1
-    #emit("users", {"user_count": clients}, broadcast=True)
 
 @app.route('/video_feed')
 def video_feed():
@@ -118,7 +105,10 @@ def _winch_p():
 
 class RemoteWeb(Thread, conf.conf):
     def __init__(self): 
-        Thread.__init__(self) 
+        Thread.__init__(self)
+        
+        # Управление через tickEvent
+        self.TE = tickEvent.tickEvent()
         
     def __del__(self):
         pass
@@ -153,8 +143,8 @@ class RemoteWeb(Thread, conf.conf):
             else :
                 statusRemote['car']['winch'] = 0
             
-            
-            print(json.dumps(statusRemote, ensure_ascii=False))
+            log.Print('[info]: data:', statusRemote)
+            self.TE.newStatus(statusRemote)
 
             time.sleep(1)
             
@@ -166,8 +156,7 @@ class RemoteWeb(Thread, conf.conf):
         threading.Thread(target=self.sender, daemon=True).start()
 
         # запускаем flask приложение
-        app.run(debug=False, host=conf.conf.clientweb_ip, port=conf.conf.clientweb_port)
-        #socketio.run(app, host=conf.conf.clientweb_ip, port=conf.conf.clientweb_port, debug=True, use_reloader=True)
+        app.run(debug=False, host=conf.conf.ServerIP, port=conf.conf.webServerPort)
 
 if __name__ == '__main__':
     
@@ -215,6 +204,7 @@ if __name__ == '__main__':
             
             #print("speed:", speedY, speedX, ", turn:", turnY, turnX, ", light:", light, ", winch:", winchM, winchP)
             print(json.dumps(statusRemote, ensure_ascii=False))
+
             #print(json.dumps(msg, ensure_ascii=False).encode("utf8"))
             time.sleep(1)
             
@@ -223,3 +213,4 @@ if __name__ == '__main__':
     threading.Thread(target=sender, daemon=True).start()    # запускаем тред отправки пакетов управления
 
     app.run(debug=False, host=args.ip, port=args.port)   # запускаем flask приложение
+    #socketio.run(app, host=args.ip, port=args.port, debug=True, use_reloader=True)

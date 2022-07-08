@@ -93,7 +93,7 @@ class ServerThread(Thread, conf.conf):
 
             # Т.к. в цикле мы избавляемся от флуда команд. 
             # Здесь Будет передано последнее актуальное состояние.
-            log.Print('[info]: data:', carStatus.statusCar)
+            log.Print('[info]: data: remote:', carStatus.statusCar)
             self.TE.newStatus(carStatus.statusCar)
 
 if __name__ == '__main__':

@@ -122,6 +122,8 @@ class RemoteWeb(Thread, conf.conf):
         global light
         global winchM, winchP
         
+        sendFreq = 20  # слать sendFreq пакетов в секунду
+        
         while True:
             #time.sleep(1 / sendFreq)
             
@@ -133,7 +135,8 @@ class RemoteWeb(Thread, conf.conf):
             statusRemote['network'][''] = True
             statusRemote['network'][''] = True
             
-            statusRemote['car']['speed'] = speedY / 100.0
+            # Т.к. на пульте управления джойстик стоит вверх ногами, а здесь нет ;)
+            statusRemote['car']['speed'] = (-1.0 *  speedY) / 100.0
             statusRemote['car']['turn'] = turnX
             
             statusRemote['car']['light'] = light
@@ -145,10 +148,10 @@ class RemoteWeb(Thread, conf.conf):
             else :
                 statusRemote['car']['winch'] = 0
             
-            log.Print('[info]: data:', statusRemote)
+            log.Print('[info]: data: web:', statusRemote)
             self.TE.newStatus(statusRemote)
 
-            time.sleep(0.05)
+            time.sleep(1.0 / sendFreq)
             
             # пример посылки управления
             # data: {'car': {'speed': -0.9979622641509434, 'winch': 0, 'turn': 88, 'light': True}, 'network': {'control': True, 'wifi': True, 'video': False}}

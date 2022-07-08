@@ -17,13 +17,22 @@
         background-color: #000000;
     }
 
+    #checkOnline {
+        font-size: 50px;
+        font-weight: bold;
+        top: 1%;
+        right: 1%;
+        bottom: 0%;
+        position: absolute;
+    }
+    
     #videoContainer {
         background-color: #00000000;
     }
 
     #video {
-        width: 95vw;
-        height: 95vh;
+        width: 100vw;
+        height: 100vh;
         display: block;
         margin: auto;
     }
@@ -38,29 +47,31 @@
     }
 
     #joySpeed {
-        width: max(33vw, 33vh);
-        height: max(33vw, 33vh);
+        width: max(10vw, 10vh);
+        height: max(10vw, 10vh);
         max-width: 400px;
         max-height: 400px;
         position: absolute;
-        left: 0%;
+        top:70%;
+        left: 7%;
         bottom: 0%;
     }
 
     #joyTurn {
-        width: max(33vw, 33vh);
-        height: max(33vw, 33vh);
+        width: max(10vw, 10vh);
+        height: max(10vw, 10vh);
         max-width: 400px;
         max-height: 400px;
         position: absolute;
-        right: 0%;
+        top:70%;
+        right: 7%;
         bottom: 0%;
     }
         
     #buttonLight {
         background-color: #3e8e41; /* Green */
-        width: max(22vw, 22vh);
-        height: max(22vw, 22vh);
+        width: max(5vw, 5vh);
+        height: max(5vw, 5vh);
         max-width: 150px;
         max-height: 150px;
         position: absolute;
@@ -79,8 +90,8 @@
         
     #buttonWinchM {
         background-color: #3e8e41; /* Green */
-        width: max(22vw, 22vh);
-        height: max(22vw, 22vh);
+        width: max(5vw, 5vh);
+        height: max(5vw, 5vh);
         max-width: 150px;
         max-height: 150px;
         position: absolute;
@@ -99,8 +110,8 @@
         
     #buttonWinchP {
         background-color: #3e8e41; /* Green */
-        width: max(22vw, 22vh);
-        height: max(22vw, 22vh);
+        width: max(5vw, 5vh);
+        height: max(5vw, 5vh);
         max-width: 150px;
         max-height: 150px;
         position: absolute;
@@ -120,7 +131,22 @@
     </style>
 </head>
 <body>
-    <!--
+    <script>
+        setInterval(function(){
+            var ifConnected = window.navigator.onLine;
+            if (ifConnected) {
+                document.getElementById("checkOnline").innerHTML = "Online";
+                document.getElementById("checkOnline").style.color = "green";
+            } else {
+                document.getElementById("checkOnline").innerHTML = "Offline";
+                document.getElementById("checkOnline").style.color = "red";
+            }
+        }, 1000);
+    </script>
+    
+    <div id="checkOnline"></div>
+    
+    <!--alert('Connection not available');
     Динамическая подстановка ip адреса для видео потока ("http://192.168.99.1:8000/?action=stream")
     src генерируется в поле script
     -->

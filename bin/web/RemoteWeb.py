@@ -21,7 +21,7 @@ import tickEvent
 from threading import Thread 
 
 from flask import Flask, render_template, Response, request
-import cv2
+#import cv2
 import threading
 import time
 import json
@@ -31,7 +31,7 @@ import logging
 app = Flask(__name__)
 logger = logging.getLogger('werkzeug')
 logger.setLevel(logging.ERROR)
-camera = cv2.VideoCapture(0)  # веб камера
+#camera = cv2.VideoCapture(0)  # веб камера
 
 speedX, speedY = 0, 0  # глобальные переменные положения джойстика с web-страницы
 turnX, turnY = 0, 0  # глобальные переменные положения джойстика с web-страницы
@@ -40,6 +40,7 @@ winchM, winchP = 0, 0  # глобальные переменные положе�
 
 def getFramesGenerator():
     """ Генератор фреймов для вывода в веб-страницу, тут же можно поиграть с openCV"""
+    '''
     while True:
         time.sleep(0.01)    # ограничение fps (если видео тупит, можно убрать)
         success, frame = camera.read()  # Получаем фрейм с камеры
@@ -50,6 +51,7 @@ def getFramesGenerator():
             _, buffer = cv2.imencode('.jpg', frame)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+    '''
 
 @app.route('/video_feed')
 def video_feed():
@@ -146,7 +148,7 @@ class RemoteWeb(Thread, conf.conf):
             log.Print('[info]: data:', statusRemote)
             self.TE.newStatus(statusRemote)
 
-            time.sleep(1)
+            time.sleep(0.05)
             
             # пример посылки управления
             # data: {'car': {'speed': -0.9979622641509434, 'winch': 0, 'turn': 88, 'light': True}, 'network': {'control': True, 'wifi': True, 'video': False}}
@@ -168,49 +170,9 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--serial', type=str, default='/dev/ttyUSB0', help="Serial port")
     args = parser.parse_args()
 
-    #serialPort = serial.Serial(args.serial, 9600)   # открываем uart
+    rw = RemoteWeb()
 
-    def sender():
-        """ функция цикличной отправки пакетов по uart """
-        global speedX, speedY
-        global turnX, turnY
-        global light
-        global winch
-        
-        while True:
-            #time.sleep(1 / sendFreq)
-            
-            # пакет, посылаемый на робота
-            statusRemote = carStatus.statusRemote
-            
-            # не используются, т.к. управление теперь на стороне сервера
-            statusRemote['network'][''] = True
-            statusRemote['network'][''] = True
-            statusRemote['network'][''] = True
-            
-            statusRemote['car']['speed'] = speedY / 100.0
-            statusRemote['car']['turn'] = turnX
-            
-            statusRemote['car']['light'] = light
-            
-            if (winchM != 0) :
-                winch = winchM
-            elif (winchP != 0) :
-                winch = winchP
-            else :
-                winch = 0
-            
-            statusRemote['car']['winch'] = winch
-            
-            #print("speed:", speedY, speedX, ", turn:", turnY, turnX, ", light:", light, ", winch:", winchM, winchP)
-            print(json.dumps(statusRemote, ensure_ascii=False))
-
-            #print(json.dumps(msg, ensure_ascii=False).encode("utf8"))
-            time.sleep(1)
-            
-            # data: {'car': {'speed': -0.9979622641509434, 'winch': 0, 'turn': 88, 'light': True}, 'network': {'control': True, 'wifi': True, 'video': False}}
-
-    threading.Thread(target=sender, daemon=True).start()    # запускаем тред отправки пакетов управления
+    threading.Thread(target=rw.sender(), daemon=True).start()    # запускаем тред отправки пакетов управления
 
     app.run(debug=False, host=args.ip, port=args.port)   # запускаем flask приложение
     #socketio.run(app, host=args.ip, port=args.port, debug=True, use_reloader=True)

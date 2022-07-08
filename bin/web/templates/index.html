@@ -119,9 +119,16 @@
         
     </style>
 </head>
-<body>    
-    <div id="videoContainer"><img id="video" src="{{ url_for('video_feed') }}"></div>
-
+<body>
+    <!--
+    Динамическая подстановка ip адреса для видео потока ("http://192.168.99.1:8000/?action=stream")
+    src генерируется в поле script
+    -->
+    <div id="videoContainer"><img id="video" src=""></div>
+    <script>
+        var video_link = window.location.protocol + "//" + window.location.hostname + ":8000/?action=stream";
+        document.getElementById('video').src = video_link;
+    </script>
     <div id="joySpeed"></div>
     <script type="text/javascript">
         var joyParamSpeed = {"title": "joystickSpeed", 

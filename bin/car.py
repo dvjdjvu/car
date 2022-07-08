@@ -33,6 +33,10 @@ def ProcessingInit(conf):
             conf:   (class(conf)) Конфигурация.
     """
     
+    # Видео сервер.
+    streamerThread = streamer.StreamerThread()
+    streamerThread.start()
+    
     # Обработка команд.
     if (conf.controller == 'web_controller') :
         # Web сервер управления.
@@ -43,13 +47,9 @@ def ProcessingInit(conf):
         # Пульт управления.
         serverThread = server.ServerThread()
         serverThread.start()
-        
-        # Видео сервер.
-        streamerThread = streamer.StreamerThread()
-        streamerThread.start()
-        
         serverThread.join()
-        streamerThread.wait()
+        
+    streamerThread.wait()
 
 def ProcessingWatchdog(): 
     """

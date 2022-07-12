@@ -38,26 +38,7 @@ turnX, turnY = 0, 0  # глобальные переменные положен�
 light = True
 winchM, winchP = 0, 0  # глобальные переменные положения джойстика с web-страницы
 
-def getFramesGenerator():
-    """ Генератор фреймов для вывода в веб-страницу, тут же можно поиграть с openCV"""
-    '''
-    while True:
-        time.sleep(0.01)    # ограничение fps (если видео тупит, можно убрать)
-        success, frame = camera.read()  # Получаем фрейм с камеры
-        if success:
-            frame = cv2.resize(frame, (conf.conf.VideoWidth, conf.conf.VideoHeight), interpolation=cv2.INTER_AREA)  # уменьшаем разрешение кадров (если видео тупит, можно уменьшить еще больше)
-            # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)   # перевод изображения в градации серого
-            # _, frame = cv2.threshold(frame, 127, 255, cv2.THRESH_BINARY)  # бинаризуем изображение
-            _, buffer = cv2.imencode('.jpg', frame)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-    '''
-
-@app.route('/video_feed')
-def video_feed():
-    """ Генерируем и отправляем изображения с камеры"""
-    return Response(getFramesGenerator(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
+sendFreq = 2 # слать sendFreq пакетов в секунду
 
 @app.route('/')
 def index():
@@ -86,7 +67,7 @@ def _light():
     light = request.args.get('light')
     if (light == 'false') :
         light = False
-    else :
+    elif (light == 'true') :
         light = True
         
     return '', 200, {'Content-Type': 'text/plain'}
@@ -122,7 +103,7 @@ class RemoteWeb(Thread, conf.conf):
         global light
         global winchM, winchP
         
-        sendFreq = 20  # слать sendFreq пакетов в секунду
+        global sendFreq
         
         while True:
             #time.sleep(1 / sendFreq)
@@ -131,9 +112,9 @@ class RemoteWeb(Thread, conf.conf):
             statusRemote = carStatus.statusRemote
             
             # не используются, т.к. управление теперь на стороне сервера
-            statusRemote['network'][''] = True
-            statusRemote['network'][''] = True
-            statusRemote['network'][''] = True
+            statusRemote['network']['video'] = True
+            statusRemote['network']['control'] = True
+            statusRemote['network']['wifi'] = True
             
             # Т.к. на пульте управления джойстик стоит вверх ногами, а здесь нет ;)
             statusRemote['car']['speed'] = (-1.0 *  speedY) / 100.0
@@ -149,7 +130,7 @@ class RemoteWeb(Thread, conf.conf):
                 statusRemote['car']['winch'] = 0
             
             log.Print('[info]: data: web:', statusRemote)
-            self.TE.newStatus(statusRemote)
+            #self.TE.newStatus(statusRemote)
 
             time.sleep(1.0 / sendFreq)
             
@@ -164,8 +145,6 @@ class RemoteWeb(Thread, conf.conf):
         app.run(debug=False, host=conf.conf.ServerIP, port=conf.conf.webServerPort)
 
 if __name__ == '__main__':
-    
-    sendFreq = 10  # слать 10 пакетов в секунду
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', type=int, default=5000, help="Running port")

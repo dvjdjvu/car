@@ -41,8 +41,11 @@ def ProcessingInit(conf):
     if (conf.controller == 'web_controller') :
         # Web сервер управления.
         remoteWeb = RemoteWeb.RemoteWeb()
-        remoteWeb.start()
-        remoteWeb.join()
+        
+        remoteWeb.run()
+        
+        #remoteWeb.start()
+        #remoteWeb.join()
     else :
         # Пульт управления.
         serverThread = server.ServerThread()

@@ -35,6 +35,8 @@
         height: 100vh;
         display: block;
         margin: auto;
+        controlslist: nodownload;
+        pointer-events: none;
     }
 
     #logo {
@@ -47,31 +49,31 @@
     }
 
     #joySpeed {
-        width: max(10vw, 10vh);
-        height: max(10vw, 10vh);
+        width: max(15vw, 15vh);
+        height: max(15vw, 15vh);
         max-width: 400px;
         max-height: 400px;
         position: absolute;
         top:70%;
-        left: 7%;
+        left: 5%;
         bottom: 0%;
     }
 
     #joyTurn {
-        width: max(10vw, 10vh);
-        height: max(10vw, 10vh);
+        width: max(15vw, 15vh);
+        height: max(15vw, 15vh);
         max-width: 400px;
         max-height: 400px;
         position: absolute;
         top:70%;
-        right: 7%;
+        right: 5%;
         bottom: 0%;
     }
         
     #buttonLight {
         background-color: #3e8e41; /* Green */
-        width: max(5vw, 5vh);
-        height: max(5vw, 5vh);
+        width: max(8vw, 8vh);
+        height: max(8vw, 8vh);
         max-width: 150px;
         max-height: 150px;
         position: absolute;
@@ -90,8 +92,8 @@
         
     #buttonWinchM {
         background-color: #3e8e41; /* Green */
-        width: max(5vw, 5vh);
-        height: max(5vw, 5vh);
+        width: max(8vw, 8vh);
+        height: max(8vw, 8vh);
         max-width: 150px;
         max-height: 150px;
         position: absolute;
@@ -100,6 +102,7 @@
         bottom: 0%;
         right: 0%;
         border-radius: 50%;
+        touch-action: pan-up pay-down;
     }
         
     #buttonWinchM:active {
@@ -110,8 +113,8 @@
         
     #buttonWinchP {
         background-color: #3e8e41; /* Green */
-        width: max(5vw, 5vh);
-        height: max(5vw, 5vh);
+        width: max(8vw, 8vh);
+        height: max(8vw, 8vh);
         max-width: 150px;
         max-height: 150px;
         position: absolute;
@@ -120,6 +123,7 @@
         bottom: 0%;
         right: 0%;
         border-radius: 50%;
+        touch-action: pan-up pay-down;
     }
         
     #buttonWinchP:active {
@@ -132,7 +136,7 @@
 </head>
 <body>
     <script>
-        setInterval(function(){
+        setInterval(function() {
             var ifConnected = window.navigator.onLine;
             if (ifConnected) {
                 document.getElementById("checkOnline").innerHTML = "Online";
@@ -164,34 +168,41 @@
                              "externalLineWidth": "5"};
         var joySpeed = new JoyStick('joySpeed', joyParamSpeed);
 		
-        function speed(speedX, speedY){
+        function speed() {
+            var speedX = joySpeed.GetX();
+            var speedY = joySpeed.GetY();
+            
             var xhttp = new XMLHttpRequest();
             xhttp.open("GET", "speed?speedX=" + speedX + "&speedY=" + speedY, true); 
             xhttp.send();
         }
 		
-        setInterval(function(){speed(joySpeed.GetX(), joySpeed.GetY());}, 50);
+        setInterval(function(){
+            speed();
+        }, 50);
     </script>
 
 
     <div id="buttonLight" onclick="lightChange()"></div>
     <script type="text/javascript">
-        var val_light = false;
+        var val_light = true;
             
-        function lightChange(){
+        function lightChange() {
             if (val_light) 
                 val_light = false;
             else 
                 val_light = true;
+            
+            lightSend();
         }
             
-        function lightSend(){
+        function lightSend() {
             var xhttp = new XMLHttpRequest();
             xhttp.open("GET", "light?light=" + val_light, true); 
             xhttp.send();
         }
 
-        setInterval(function(){lightSend();}, 50);
+        //setInterval(function(){lightSend();}, 50);
     </script>
 
     <div id="buttonWinchM" onclick="winchSendM()"></div>
@@ -201,27 +212,51 @@
         var btn_m = document.getElementById('buttonWinchM');
         btn_m.addEventListener('keydown', function(data) {
                 val_winch_m = -1;
+                winchSendM();
             });
 
         btn_m.addEventListener('keyup', function(data) {
                 val_winch_m = 0;
+                winchSendM();
             });
 
         btn_m.addEventListener('mousedown', function(data) {
                 val_winch_m = -1;
+                winchSendM();
             });
 
         btn_m.addEventListener('mouseup', function(data) {
                 val_winch_m = 0;
+                winchSendM();
             });
             
-        function winchSendM(){              
+        btn_m.addEventListener("touchstart", function(data) {
+                val_winch_m = -1;
+                winchSendM();
+            });
+            
+        btn_m.addEventListener("touchend", function(data) {
+                val_winch_m = 0;
+                winchSendM();
+            });
+            
+        btn_m.addEventListener("touchmove", function(data) {
+                val_winch_m = -1;
+                winchSendM();
+            });
+            
+        btn_m.addEventListener("handleCancel", function(data) {
+                val_winch_m = 0;
+                winchSendM();
+            });
+            
+        function winchSendM() {              
             var xhttp = new XMLHttpRequest();
             xhttp.open("GET", "winch_m?winch=" + val_winch_m, true); 
             xhttp.send();
         }
             
-        setInterval(function(){winchSendM();}, 50);
+        //setInterval(function(){winchSendM();}, 50);
     </script>
 
     <div id="buttonWinchP" onclick="winchSendP()"></div>
@@ -231,29 +266,51 @@
         var btn_p = document.getElementById('buttonWinchP');
         btn_p.addEventListener('keydown', function(data) {
                 val_winch_p = 1;
+                winchSendP();
             });
 
         btn_p.addEventListener('keyup', function(data) {
                 val_winch_p = 0;
+                winchSendP();
             });
 
         btn_p.addEventListener('mousedown', function(data) {
                 val_winch_p = 1;
+                winchSendP();
             });
 
         btn_p.addEventListener('mouseup', function(data) {
                 val_winch_p = 0;
+                winchSendP();
             });
             
-        function winchSendP(){              
+        btn_p.addEventListener("touchstart", function(data) {
+                val_winch_p = 1;
+                winchSendP();
+            });
+            
+        btn_p.addEventListener("touchend", function(data) {
+                val_winch_p = 0;
+                winchSendP();
+            });
+            
+        btn_p.addEventListener("touchmove", function(data) {
+                val_winch_p = 1;
+                winchSendP();
+            });
+            
+        btn_p.addEventListener("handleCancel", function(data) {
+                val_winch_p = 0;
+                winchSendP();
+            });
+            
+        function winchSendP() {              
             var xhttp = new XMLHttpRequest();
             xhttp.open("GET", "winch_p?winch=" + val_winch_p, true); 
             xhttp.send();
         }
 
-        setInterval(function () {
-            winchSendP();
-        }, 50);
+        //setInterval(function () {winchSendP();}, 50);
     </script>
 
 

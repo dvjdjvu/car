@@ -134,7 +134,7 @@ class RemoteWeb(Thread, conf.conf):
                 statusRemote['car']['winch'] = 0
             
             log.Print('[info]: data: web:', statusRemote)
-            #self.TE.newStatus(statusRemote)
+            self.TE.newStatus(statusRemote)
 
             time.sleep(1.0 / sendFreq)
             

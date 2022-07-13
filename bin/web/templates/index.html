@@ -143,7 +143,7 @@
             const signal = controller.signal;
             const options = { mode: 'no-cors', signal };
             return fetch(url_test, options)
-                .then(setTimeout(() => { controller.abort() }, 500))
+                .then(setTimeout(() => { controller.abort() }, 250))
                 .then(response => {
                     document.getElementById("checkOnline").innerHTML = "Online";
                     document.getElementById("checkOnline").style.color = "green";
@@ -156,7 +156,7 @@
             
         setInterval(function() {
             ping();
-        }, 1000);
+        }, 500);
         
     </script>
     
@@ -188,10 +188,31 @@
             xhttp.open("GET", "speed?speedX=" + speedX + "&speedY=" + speedY, true); 
             xhttp.send();
         }
-		
-        setInterval(function() {
-            speed();
-        }, 500);
+        
+        var js = document.getElementById('joySpeed');
+        js.addEventListener('keydown', function(data) {
+                speed();
+            });
+            
+        js.addEventListener('mousedown', function(data) {
+                speed();
+            });
+            
+        js.addEventListener('mousemove', function(data) {
+                speed();
+            });
+            
+        js.addEventListener('touchstart', function(data) {
+                speed();
+            });
+            
+        js.addEventListener('touchmove', function(data) {
+                speed();
+            });
+        
+        //setInterval(function() {
+        //    speed();
+        //}, 500);
     </script>
     
     <div id="joyTurn"></div>
@@ -212,10 +233,31 @@
             xhttp.open("GET", "turn?turnX=" + turnX + "&turnY=" + turnY, true);
             xhttp.send();
         }
-
-        setInterval(function() {
-            turn();
-        }, 500);
+        
+        var jt = document.getElementById('joyTurn');
+        jt.addEventListener('keydown', function(data) {
+                turn();
+            });
+            
+        jt.addEventListener('mousedown', function(data) {
+                turn();
+            });
+            
+        jt.addEventListener('mousemove', function(data) {
+                turn();
+            });
+            
+        jt.addEventListener('touchstart', function(data) {
+                turn();
+            });
+            
+        jt.addEventListener('touchmove', function(data) {
+                turn();
+            });
+        
+        //setInterval(function() {
+        //    turn();
+        //}, 500);
     </script>
 
     <div id="buttonLight" onclick="lightChange()"></div>

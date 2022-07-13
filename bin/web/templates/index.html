@@ -136,16 +136,28 @@
 </head>
 <body>
     <script>
+        function ping() {
+            var url_test = window.location.protocol + "//" + window.location.hostname + "/test";
+                
+            const controller = new AbortController();
+            const signal = controller.signal;
+            const options = { mode: 'no-cors', signal };
+            return fetch(url_test, options)
+                .then(setTimeout(() => { controller.abort() }, 500))
+                .then(response => {
+                    document.getElementById("checkOnline").innerHTML = "Online";
+                    document.getElementById("checkOnline").style.color = "green";
+                })
+                .catch(error => {
+                    document.getElementById("checkOnline").innerHTML = "Offline";
+                    document.getElementById("checkOnline").style.color = "red";
+                })
+        }
+            
         setInterval(function() {
-            var ifConnected = window.navigator.onLine;
-            if (ifConnected) {
-                document.getElementById("checkOnline").innerHTML = "Online";
-                document.getElementById("checkOnline").style.color = "green";
-            } else {
-                document.getElementById("checkOnline").innerHTML = "Offline";
-                document.getElementById("checkOnline").style.color = "red";
-            }
+            ping();
         }, 1000);
+        
     </script>
     
     <div id="checkOnline"></div>
@@ -177,11 +189,34 @@
             xhttp.send();
         }
 		
-        setInterval(function(){
+        setInterval(function() {
             speed();
-        }, 50);
+        }, 500);
     </script>
+    
+    <div id="joyTurn"></div>
+    <script type="text/javascript">
+        var joyParamTurn = {"title": "joystickTurn",
+            "autoReturnToCenter": true,
+            "internalFillColor": "#FF0000",
+            "externalStrokeColor": "#800000",
+            "externalLineWidth": "5"};
 
+        var joyTurn = new JoyStick('joyTurn', joyParamTurn);
+
+        function turn() {
+            var turnX = joyTurn.GetX();
+            var turnY = joyTurn.GetY();
+            
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("GET", "turn?turnX=" + turnX + "&turnY=" + turnY, true);
+            xhttp.send();
+        }
+
+        setInterval(function() {
+            turn();
+        }, 500);
+    </script>
 
     <div id="buttonLight" onclick="lightChange()"></div>
     <script type="text/javascript">
@@ -311,28 +346,6 @@
         }
 
         //setInterval(function () {winchSendP();}, 50);
-    </script>
-
-
-    <div id="joyTurn"></div>
-    <script type="text/javascript">
-        var joyParamTurn = {"title": "joystickTurn",
-            "autoReturnToCenter": true,
-            "internalFillColor": "#FF0000",
-            "externalStrokeColor": "#800000",
-            "externalLineWidth": "5"};
-
-        var joyTurn = new JoyStick('joyTurn', joyParamTurn);
-
-        function turn(turnX, turnY) {
-            var xhttp = new XMLHttpRequest();
-            xhttp.open("GET", "turn?turnX=" + turnX + "&turnY=" + turnY, true);
-            xhttp.send();
-        }
-
-        setInterval(function () {
-            turn(joyTurn.GetX(), joyTurn.GetY());
-        }, 50);
     </script>
 
 </body>

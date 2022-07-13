@@ -40,11 +40,15 @@ winchM, winchP = 0, 0  # глобальные переменные положе�
 
 sendFreq = 2 # слать sendFreq пакетов в секунду
 
+@app.route('/test')
+def test():
+    """ Крутим test страницу """
+    return '<html><head>Flask is working.</head></html>'
+
 @app.route('/')
 def index():
     """ Крутим html страницу """
     return render_template('index.html')
-
 
 @app.route('/speed')
 def speed():

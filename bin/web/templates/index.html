@@ -224,10 +224,6 @@
         js.addEventListener('touchcancel', function(data) {
                 speed(0, 0);
             });
-        
-        //setInterval(function() {
-        //    speed();
-        //}, 500);
     </script>
     
     <div id="joyTurn"></div>
@@ -274,10 +270,6 @@
         jt.addEventListener('touchcancel', function(data) {
                 turn(0, 0);
             });
-        
-        //setInterval(function() {
-        //    turn();
-        //}, 500);
     </script>
 
     <div id="buttonLight" onclick="lightChange()"></div>
@@ -298,116 +290,96 @@
             xhttp.open("GET", "light?light=" + val_light, true); 
             xhttp.send();
         }
-
-        //setInterval(function(){lightSend();}, 50);
     </script>
 
     <div id="buttonWinchM" onclick="winchSendM()"></div>
-    <script type="text/javascript">
-        var val_winch_m = 0;
-            
+    <script type="text/javascript"> 
         var btn_m = document.getElementById('buttonWinchM');
         btn_m.addEventListener('keydown', function(data) {
-                val_winch_m = -1;
-                winchSendM();
+                winchSendM(-1);
             });
 
         btn_m.addEventListener('keyup', function(data) {
-                val_winch_m = 0;
-                winchSendM();
+                winchSendM(0);
             });
 
         btn_m.addEventListener('mousedown', function(data) {
-                val_winch_m = -1;
-                winchSendM();
+                winchSendM(-1);
             });
 
         btn_m.addEventListener('mouseup', function(data) {
-                val_winch_m = 0;
-                winchSendM();
+                winchSendM(0);
             });
             
         btn_m.addEventListener("touchstart", function(data) {
-                val_winch_m = -1;
-                winchSendM();
+                winchSendM(-1);
             });
             
         btn_m.addEventListener("touchend", function(data) {
-                val_winch_m = 0;
-                winchSendM();
+                winchSendM(0);
             });
             
         btn_m.addEventListener("touchmove", function(data) {
-                val_winch_m = -1;
-                winchSendM();
+                winchSendM(-1);
             });
             
         btn_m.addEventListener("handleCancel", function(data) {
-                val_winch_m = 0;
-                winchSendM();
+                winchSendM(0);
             });
             
-        function winchSendM() {              
+        function winchSendM(val) {     
+            // Блокируем противоположное значение лебедки.
+            document.getElementById("buttonWinchP").disabled = Boolean(val); // -1 && 1 == true, 0 == false 
+            
             var xhttp = new XMLHttpRequest();
-            xhttp.open("GET", "winch_m?winch=" + val_winch_m, true); 
+            xhttp.open("GET", "winch?winch=" + val, true); 
             xhttp.send();
         }
-            
-        //setInterval(function(){winchSendM();}, 50);
     </script>
 
     <div id="buttonWinchP" onclick="winchSendP()"></div>
     <script type="text/javascript">
-        var val_winch_p = 0;
-            
         var btn_p = document.getElementById('buttonWinchP');
         btn_p.addEventListener('keydown', function(data) {
-                val_winch_p = 1;
-                winchSendP();
+                winchSendP(1);
             });
 
         btn_p.addEventListener('keyup', function(data) {
-                val_winch_p = 0;
-                winchSendP();
+                winchSendP(0);
             });
 
         btn_p.addEventListener('mousedown', function(data) {
-                val_winch_p = 1;
-                winchSendP();
+                winchSendP(1);
             });
 
         btn_p.addEventListener('mouseup', function(data) {
-                val_winch_p = 0;
-                winchSendP();
+                winchSendP(0);
             });
             
         btn_p.addEventListener("touchstart", function(data) {
-                val_winch_p = 1;
-                winchSendP();
+                winchSendP(1);
             });
             
         btn_p.addEventListener("touchend", function(data) {
-                val_winch_p = 0;
-                winchSendP();
+                winchSendP(0);
             });
             
         btn_p.addEventListener("touchmove", function(data) {
-                val_winch_p = 1;
-                winchSendP();
+                winchSendP(1);
             });
             
         btn_p.addEventListener("handleCancel", function(data) {
-                val_winch_p = 0;
-                winchSendP();
+                winchSendP(0);
             });
             
-        function winchSendP() {              
+        function winchSendP(val) {
+            // Блокируем противоположное значение лебедки.
+            document.getElementById("buttonWinchM").disabled = Boolean(val);
+            
             var xhttp = new XMLHttpRequest();
-            xhttp.open("GET", "winch_p?winch=" + val_winch_p, true); 
+            xhttp.open("GET", "winch?winch=" + val, true); 
             xhttp.send();
         }
-
-        //setInterval(function () {winchSendP();}, 50);
     </script>
 
 </body>

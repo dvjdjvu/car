@@ -33,12 +33,19 @@ logger = logging.getLogger('werkzeug')
 logger.setLevel(logging.ERROR)
 #camera = cv2.VideoCapture(0)  # веб камера
 
-speedX, speedY = 0, 0  # глобальные переменные положения джойстика с web-страницы
-turnX, turnY = 0, 0  # глобальные переменные положения джойстика с web-страницы
-light = True
-winchM, winchP = 0, 0  # глобальные переменные положения джойстика с web-страницы
+#speedX, speedY = 0, 0  # глобальные переменные положения джойстика с web-страницы
+#turnX, turnY = 0, 0  # глобальные переменные положения джойстика с web-страницы
+#light = True
+#winchM, winchP = 0, 0  # глобальные переменные положения джойстика с web-страницы
 
-sendFreq = 2 # слать sendFreq пакетов в секунду
+sendFreq = 1 # слать sendFreq пакетов в секунду
+
+# пакет, посылаемый на робота
+statusRemote = carStatus.statusRemote
+statusRemote['car']['light'] = True
+
+# Управление через tickEvent
+TE = tickEvent.tickEvent()
 
 @app.route('/test')
 def test():
@@ -53,67 +60,75 @@ def index():
 @app.route('/speed')
 def speed():
     """ Пришел запрос на управления роботом """
-    global speedX, speedY
+    global statusRemote
+    
     speedX, speedY = int(request.args.get('speedX')), int(request.args.get('speedY'))
+    statusRemote['car']['speed'] = (-1.0 *  speedY) / 100.0
+    
+    send_cmd()
+    
     return '', 200, {'Content-Type': 'text/plain'}
 
 @app.route('/turn')
 def turn():
     """ Пришел запрос на управления роботом """
-    global turnX, turnY
+    global statusRemote
+    
     turnX, turnY = int(request.args.get('turnX')), int(request.args.get('turnY'))
+    statusRemote['car']['turn'] = turnX
+    
+    send_cmd()
+    
     return '', 200, {'Content-Type': 'text/plain'}
 
 @app.route('/light')
-def _light():
+def light():
     """ Пришел запрос на управления роботом """
-    global light
+    global statusRemote
+    
     light = request.args.get('light')
     if (light == 'false') :
-        light = False
+        statusRemote['car']['light'] = False
     elif (light == 'true') :
-        light = True
-        
+        statusRemote['car']['light'] = True
+    
+    send_cmd()
+    
     return '', 200, {'Content-Type': 'text/plain'}
 
-@app.route('/winch_m')
-def _winch_m():
+@app.route('/winch')
+def winch():
     """ Пришел запрос на управления роботом """
-    global winchM
-    winchM = int(request.args.get('winch'))
+    global statusRemote
+    #winchM = int(request.args.get('winch'))
+    
+    statusRemote['car']['winch'] = int(request.args.get('winch'))
+    
+    send_cmd()
+    
     return '', 200, {'Content-Type': 'text/plain'}
 
-@app.route('/winch_p')
-def _winch_p():
-    """ Пришел запрос на управления роботом """
-    global winchP
-    winchP = int(request.args.get('winch'))
-    return '', 200, {'Content-Type': 'text/plain'}
+def send_cmd():
+    global statusRemote, TE
+    log.Print('[info]: data: web:', statusRemote)
+    #TE.newStatus(statusRemote)
 
 class RemoteWeb(Thread, conf.conf):
     def __init__(self): 
         Thread.__init__(self)
         
-        # Управление через tickEvent
-        self.TE = tickEvent.tickEvent()
-        
     def __del__(self):
         pass
     
     def sender(self):
-        """ функция цикличной отправки пакетов по uart """
-        global speedX, speedY
-        global turnX, turnY
-        global light
-        global winchM, winchP
-        
-        global sendFreq
+        """ функция цикличной отправки пакетов по uart """        
+        global sendFreq, statusRemote, TE
         
         while True:
             #time.sleep(1 / sendFreq)
             
             # пакет, посылаемый на робота
-            statusRemote = carStatus.statusRemote
+            #statusRemote = carStatus.statusRemote
             
             # не используются, т.к. управление теперь на стороне сервера
             statusRemote['network']['video'] = True
@@ -121,21 +136,23 @@ class RemoteWeb(Thread, conf.conf):
             statusRemote['network']['wifi'] = True
             
             # Т.к. на пульте управления джойстик стоит вверх ногами, а здесь нет ;)
-            statusRemote['car']['speed'] = (-1.0 *  speedY) / 100.0
-            statusRemote['car']['turn'] = turnX
+            ##statusRemote['car']['speed'] = (-1.0 *  speedY) / 100.0
+            ##statusRemote['car']['turn'] = turnX
             
-            statusRemote['car']['light'] = light
+            ##statusRemote['car']['light'] = light
             
+            '''
             if (winchM != 0) :
                 statusRemote['car']['winch'] = winchM
             elif (winchP != 0) :
                 statusRemote['car']['winch'] = winchP
             else :
                 statusRemote['car']['winch'] = 0
+            '''
             
-            log.Print('[info]: data: web:', statusRemote)
-            self.TE.newStatus(statusRemote)
-
+            send_cmd()
+            
+            
             time.sleep(1.0 / sendFreq)
             
             # пример посылки управления
@@ -149,16 +166,10 @@ class RemoteWeb(Thread, conf.conf):
         app.run(debug=False, host=conf.conf.ServerIP, port=conf.conf.webServerPort)
 
 if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--port', type=int, default=5000, help="Running port")
-    parser.add_argument("-i", "--ip", type=str, default='127.0.0.1', help="Ip address")
-    parser.add_argument('-s', '--serial', type=str, default='/dev/ttyUSB0', help="Serial port")
-    args = parser.parse_args()
-
     rw = RemoteWeb()
 
     threading.Thread(target=rw.sender(), daemon=True).start()    # запускаем тред отправки пакетов управления
-
-    app.run(debug=False, host=args.ip, port=args.port)   # запускаем flask приложение
+    
+    print('Start')
+    app.run(debug=False, host='0.0.0.0', port=8080)   # запускаем flask приложение
     #socketio.run(app, host=args.ip, port=args.port, debug=True, use_reloader=True)

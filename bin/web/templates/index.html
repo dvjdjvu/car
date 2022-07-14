@@ -136,6 +136,21 @@
 </head>
 <body>
     <script>
+        // тест соединения со стороны клиента, если сервер перестанет получать
+        // сообщения, то он остановит машинку.
+        
+        function connect_check() {            
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("GET", "connect_check", true);
+            xhttp.send();
+        }
+        
+        setInterval(function() {
+            connect_check();
+        }, 500);
+    </script>
+    
+    <script>
         function ping() {
             var url_test = window.location.protocol + "//" + window.location.hostname + "/test";
             

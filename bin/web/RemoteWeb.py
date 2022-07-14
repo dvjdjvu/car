@@ -38,14 +38,30 @@ logger.setLevel(logging.ERROR)
 #light = True
 #winchM, winchP = 0, 0  # глобальные переменные положения джойстика с web-страницы
 
-sendFreq = 1 # слать sendFreq пакетов в секунду
+sendFreq = 2 # слать sendFreq пакетов в секунду
 
 # пакет, посылаемый на робота
 statusRemote = carStatus.statusRemote
+# по умолчанию свет загорается, поэтому выставляем его
 statusRemote['car']['light'] = True
+ # не используются, т.к. управление теперь на стороне сервера
+statusRemote['network']['video'] = True
+statusRemote['network']['control'] = True
+statusRemote['network']['wifi'] = True
 
 # Управление через tickEvent
 TE = tickEvent.tickEvent()
+
+dt_last_data = time.time()
+
+@app.route('/connect_check')
+def connect_check():
+    """ Функция проверки связи """
+    global dt_last_data
+            
+    dt_last_data = time.time()
+    
+    return '', 200, {'Content-Type': 'text/plain'}
 
 @app.route('/test')
 def test():
@@ -122,37 +138,15 @@ class RemoteWeb(Thread, conf.conf):
     
     def sender(self):
         """ функция цикличной отправки пакетов по uart """        
-        global sendFreq, statusRemote, TE
+        global sendFreq, dt_last_data, statusRemote
         
         while True:
-            #time.sleep(1 / sendFreq)
-            
-            # пакет, посылаемый на робота
-            #statusRemote = carStatus.statusRemote
-            
-            # не используются, т.к. управление теперь на стороне сервера
-            statusRemote['network']['video'] = True
-            statusRemote['network']['control'] = True
-            statusRemote['network']['wifi'] = True
-            
-            # Т.к. на пульте управления джойстик стоит вверх ногами, а здесь нет ;)
-            ##statusRemote['car']['speed'] = (-1.0 *  speedY) / 100.0
-            ##statusRemote['car']['turn'] = turnX
-            
-            ##statusRemote['car']['light'] = light
-            
-            '''
-            if (winchM != 0) :
-                statusRemote['car']['winch'] = winchM
-            elif (winchP != 0) :
-                statusRemote['car']['winch'] = winchP
-            else :
-                statusRemote['car']['winch'] = 0
-            '''
+            dt_diff = time.time() - dt_last_data
+            if (dt_diff >= conf.conf.dt_check) :
+                statusRemote = CarStatus().statusRemote
             
             send_cmd()
-            
-            
+
             time.sleep(1.0 / sendFreq)
             
             # пример посылки управления

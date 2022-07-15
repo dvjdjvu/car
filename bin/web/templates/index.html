@@ -138,6 +138,7 @@
     <script>
         // init section
         var val_light = true;
+        var ping_status = true;
         
         
         // тест соединения со стороны клиента, если сервер перестанет получать
@@ -155,10 +156,24 @@
     </script>
     
     <script>
+        
+        // Если видео с сервера есть, то показываем его, если нет то иконку.
+        function video_set(val) {
+            var video_link = window.location.protocol + "//" + window.location.hostname;
+            
+            if (val) {
+                video_link += ":8000/?action=stream";
+                document.getElementById('video').src = video_link;
+            } else {
+                //video_link += "/static/no_video.png";
+                video_link = "";
+                document.getElementById('video').src = video_link;
+            }
+        }
+        
+        // Проверка связи с сервером
         function ping() {
             var url_test = window.location.protocol + "//" + window.location.hostname + "/test";
-            
-            var ping_status = true;
             
             const controller = new AbortController();
             const signal = controller.signal;
@@ -171,6 +186,8 @@
                     
                     if (ping_status == false) {
                         window.location.reload(true);
+                        video_set(true);
+                        //alert('Видео с камеры');
                     }
                     
                     ping_status = true;
@@ -179,9 +196,15 @@
                     document.getElementById("checkOnline").innerHTML = "Control";
                     document.getElementById("checkOnline").style.color = "red";
                     
+                    if (ping_status == true) {
+                        video_set(false);
+                        //alert('Видео нет');
+                    }
+                    
                     ping_status = false;
                     
                     val_light = false;
+                    
                 })
         }
             
@@ -199,8 +222,7 @@
     -->
     <div id="videoContainer"><img id="video" src=""></div>
     <script>
-        var video_link = window.location.protocol + "//" + window.location.hostname + ":8000/?action=stream";
-        document.getElementById('video').src = video_link;
+        video_set(true);
     </script>
     <div id="joySpeed"></div>
     <script type="text/javascript">

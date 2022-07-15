@@ -136,6 +136,10 @@
 </head>
 <body>
     <script>
+        // init section
+        var val_light = true;
+        
+        
         // тест соединения со стороны клиента, если сервер перестанет получать
         // сообщения, то он остановит машинку.
         
@@ -162,20 +166,22 @@
             return fetch(url_test, options)
                 .then(setTimeout(() => { controller.abort() }, 500))
                 .then(response => {
-                    document.getElementById("checkOnline").innerHTML = "Online";
+                    document.getElementById("checkOnline").innerHTML = "Control";
                     document.getElementById("checkOnline").style.color = "green";
                     
                     if (ping_status == false) {
-                        window.location.reload();
+                        window.location.reload(true);
                     }
                     
                     ping_status = true;
                 })
                 .catch(error => {
-                    document.getElementById("checkOnline").innerHTML = "Offline";
+                    document.getElementById("checkOnline").innerHTML = "Control";
                     document.getElementById("checkOnline").style.color = "red";
                     
                     ping_status = false;
+                    
+                    val_light = false;
                 })
         }
             
@@ -289,8 +295,6 @@
 
     <div id="buttonLight" onclick="lightChange()"></div>
     <script type="text/javascript">
-        var val_light = true;
-            
         function lightChange() {
             if (val_light) 
                 val_light = false;

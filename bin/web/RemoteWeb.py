@@ -46,7 +46,7 @@ statusRemote = carStatus.statusRemote
 statusRemote['car']['light'] = True
  # не используются, т.к. управление теперь на стороне сервера
 statusRemote['network']['video'] = True
-statusRemote['network']['control'] = True
+statusRemote['network']['control'] = False
 statusRemote['network']['wifi'] = True
 
 # Управление через tickEvent
@@ -60,6 +60,8 @@ def connect_check():
     global dt_last_data
             
     dt_last_data = time.time()
+    
+    statusRemote['network']['control'] = True
     
     return '', 200, {'Content-Type': 'text/plain'}
 
@@ -103,10 +105,13 @@ def light():
     global statusRemote
     
     light = request.args.get('light')
-    if (light == 'false') :
-        statusRemote['car']['light'] = False
-    elif (light == 'true') :
-        statusRemote['car']['light'] = True
+    
+    statusRemote['car']['light'] = not statusRemote['car']['light']
+    
+    #if (light == 'false') :
+    #    statusRemote['car']['light'] = False
+    #elif (light == 'true') :
+    #    statusRemote['car']['light'] = True
     
     send_cmd()
     

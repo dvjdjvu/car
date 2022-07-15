@@ -132,7 +132,7 @@ def winch():
 def send_cmd():
     global statusRemote, TE
     log.Print('[info]: data: web:', statusRemote)
-    #TE.newStatus(statusRemote)
+    TE.newStatus(statusRemote)
 
 class RemoteWeb(Thread, conf.conf):
     def __init__(self): 

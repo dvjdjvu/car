@@ -20,13 +20,13 @@ import tickEvent
 
 from threading import Thread 
 
-from flask import Flask, render_template, Response, request
-#import cv2
-import threading
+from flask import Flask, render_template, Response, request, json
+
 import time
-import json
-import argparse
 import logging
+import argparse
+import subprocess
+
 
 app = Flask(__name__)
 logger = logging.getLogger('werkzeug')
@@ -68,7 +68,22 @@ def connect_check():
 @app.route('/test')
 def test():
     """ Крутим test страницу """
-    return '<html><head>Flask is working.</head></html>'
+    
+    temp = subprocess.check_output(['vcgencmd', 'measure_temp']).decode('utf-8')
+    volt = subprocess.check_output(['vcgencmd', 'get_throttled']).decode('utf-8')
+    
+    data = {}
+    data['temp'] = temp.rstrip()
+    data['volt'] = volt.rstrip()
+    
+    response = app.response_class(
+        response=json.dumps(data),
+        mimetype='application/json'
+    )
+    
+    return response
+    
+    #return '<html><head>{0}</head></html>'.format(str(ret))
 
 @app.route('/')
 def index():
@@ -159,7 +174,7 @@ class RemoteWeb(Thread, conf.conf):
     
     def run(self):
         # запускаем тред отправки пакетов управления
-        threading.Thread(target=self.sender, daemon=True).start()
+        Thread(target=self.sender, daemon=True).start()
 
         # запускаем flask приложение
         app.run(debug=False, host=conf.conf.ServerIP, port=conf.conf.webServerPort)
@@ -167,7 +182,7 @@ class RemoteWeb(Thread, conf.conf):
 if __name__ == '__main__':
     rw = RemoteWeb()
 
-    threading.Thread(target=rw.sender(), daemon=True).start()    # запускаем тред отправки пакетов управления
+    Thread(target=rw.sender(), daemon=True).start()    # запускаем тред отправки пакетов управления
     
     print('Start')
     app.run(debug=False, host='0.0.0.0', port=8080)   # запускаем flask приложение

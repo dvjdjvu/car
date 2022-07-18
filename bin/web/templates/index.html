@@ -26,6 +26,15 @@
         position: absolute;
     }
     
+    #checkStatus {
+        font-size: 20px;
+        font-weight: bold;
+        top: 1%;
+        left: 1%;
+        bottom: 0%;
+        position: absolute;
+    }
+    
     #videoContainer {
         background-color: #00000000;
     }
@@ -190,6 +199,10 @@
                         //alert('Видео с камеры');
                     }
                     
+                    response.json().then(function(parsedJson) {
+                        document.getElementById("checkStatus").innerHTML =  JSON.stringify(parsedJson);
+                    })
+                    
                     ping_status = true;
                 })
                 .catch(error => {
@@ -210,10 +223,11 @@
             
         setInterval(function() {
             ping();
-        }, 1000);
+        }, 600);
         
     </script>
     
+    <div id="checkStatus"></div>
     <div id="checkOnline"></div>
     
     <!--alert('Connection not available');

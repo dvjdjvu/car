@@ -200,7 +200,8 @@
                     }
                     
                     response.json().then(function(parsedJson) {
-                        document.getElementById("checkStatus").innerHTML =  JSON.stringify(parsedJson);
+                        //document.getElementById("checkStatus").innerHTML =  JSON.stringify(parsedJson);
+                        document.getElementById("checkStatus").innerHTML =  parsedJson.temp + ", " + parsedJson.volt;
                     })
                     
                     ping_status = true;

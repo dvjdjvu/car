@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" manifest="cache.manifest">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -174,8 +174,7 @@
                 video_link += ":8000/?action=stream";
                 document.getElementById('video').src = video_link;
             } else {
-                //video_link += "/static/no_video.png";
-                video_link = "";
+                video_link += "/static/no_video.jpg";
                 document.getElementById('video').src = video_link;
             }
         }
@@ -239,6 +238,7 @@
     <script>
         video_set(true);
     </script>
+    
     <div id="joySpeed"></div>
     <script type="text/javascript">
         var joyParamSpeed = {"title": "joystickSpeed", 

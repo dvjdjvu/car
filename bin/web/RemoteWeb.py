@@ -69,8 +69,13 @@ def connect_check():
 def test():
     """ Крутим test страницу """
     
-    temp = subprocess.check_output(['vcgencmd', 'measure_temp']).decode('utf-8')
-    volt = subprocess.check_output(['vcgencmd', 'get_throttled']).decode('utf-8')
+    try :
+        temp = subprocess.check_output(['vcgencmd', 'measure_temp']).decode('utf-8')
+        volt = subprocess.check_output(['vcgencmd', 'get_throttled']).decode('utf-8')
+    except :
+        temp = 'raspberry is emulating\n'
+        volt = '\n'
+    
     
     data = {}
     data['temp'] = temp.rstrip()
@@ -138,7 +143,10 @@ def winch():
     global statusRemote
     #winchM = int(request.args.get('winch'))
     
-    statusRemote['car']['winch'] = int(request.args.get('winch'))
+    try:
+        statusRemote['car']['winch'] = int(request.args.get('winch'))
+    except ValueError:
+        statusRemote['car']['winch'] = 0
     
     send_cmd()
     
@@ -179,11 +187,10 @@ class RemoteWeb(Thread, conf.conf):
         # запускаем flask приложение
         app.run(debug=False, host=conf.conf.ServerIP, port=conf.conf.webServerPort)
 
-if __name__ == '__main__':
+if __name__ == '__main__':    
     rw = RemoteWeb()
 
     Thread(target=rw.sender(), daemon=True).start()    # запускаем тред отправки пакетов управления
     
-    print('Start')
-    app.run(debug=False, host='0.0.0.0', port=8080)   # запускаем flask приложение
+    app.run(debug=False, host='127.0.0.1', port=8080)   # запускаем flask приложение
     #socketio.run(app, host=args.ip, port=args.port, debug=True, use_reloader=True)

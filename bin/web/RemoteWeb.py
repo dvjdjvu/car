@@ -70,19 +70,17 @@ def test():
     """ Крутим test страницу """
     
     try :
-        temp = subprocess.check_output(['vcgencmd', 'measure_temp']).decode('utf-8')
-        volt = subprocess.check_output(['vcgencmd', 'get_throttled']).decode('utf-8')
+        temp = subprocess.check_output(['vcgencmd', 'measure_temp']).decode('utf-8').rstrip()
+        volt = subprocess.check_output(['vcgencmd', 'get_throttled']).decode('utf-8').rstrip()
     except :
-        temp = 'raspberry is emulating\n'
-        volt = '\n'
+        temp = 'Emulating'
+        volt = ''
     
-    
-    data = {}
-    data['temp'] = temp.rstrip()
-    data['volt'] = volt.rstrip()
+    statusRemote['raspberry']['temp'] = temp
+    statusRemote['raspberry']['volt'] = volt
     
     response = app.response_class(
-        response=json.dumps(data),
+        response=json.dumps(statusRemote),
         mimetype='application/json'
     )
     

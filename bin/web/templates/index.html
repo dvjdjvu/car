@@ -46,6 +46,10 @@
         margin: auto;
         controlslist: nodownload;
         pointer-events: none;
+        background-image: url('/static/no_video.jpg');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 100vw 100vh;
     }
 
     #logo {
@@ -194,13 +198,12 @@
                     
                     if (ping_status == false) {
                         window.location.reload(true);
-                        video_set(true);
-                        //alert('Видео с камеры');
+                        //video_set(true);
                     }
                     
                     response.json().then(function(parsedJson) {
                         //document.getElementById("checkStatus").innerHTML =  JSON.stringify(parsedJson);
-                        document.getElementById("checkStatus").innerHTML =  parsedJson.temp + ", " + parsedJson.volt;
+                        document.getElementById("checkStatus").innerHTML = parsedJson.raspberry.temp + ", " + parsedJson.raspberry.volt;
                     })
                     
                     ping_status = true;
@@ -210,8 +213,7 @@
                     document.getElementById("checkOnline").style.color = "red";
                     
                     if (ping_status == true) {
-                        video_set(false);
-                        //alert('Видео нет');
+                        //video_set(false);
                     }
                     
                     ping_status = false;
@@ -236,7 +238,7 @@
     -->
     <div id="videoContainer"><img id="video" src=""></div>
     <script>
-        video_set(true);
+        //video_set(true);
     </script>
     
     <div id="joySpeed"></div>

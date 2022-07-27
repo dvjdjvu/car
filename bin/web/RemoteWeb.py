@@ -41,13 +41,13 @@ logger.setLevel(logging.ERROR)
 sendFreq = 2 # слать sendFreq пакетов в секунду
 
 # пакет, посылаемый на робота
-statusRemote = carStatus.statusRemote
+statusCar = carStatus.statusCar
 # по умолчанию свет загорается, поэтому выставляем его
-statusRemote['car']['light'] = True
+statusCar['car']['light'] = True
  # не используются, т.к. управление теперь на стороне сервера
-statusRemote['network']['video'] = True
-statusRemote['network']['control'] = False
-statusRemote['network']['wifi'] = True
+statusCar['network']['video'] = True
+statusCar['network']['control'] = False
+statusCar['network']['wifi'] = True
 
 # Управление через tickEvent
 TE = tickEvent.tickEvent()
@@ -61,7 +61,7 @@ def connect_check():
             
     dt_last_data = time.time()
     
-    statusRemote['network']['control'] = True
+    statusCar['network']['control'] = True
     
     return '', 200, {'Content-Type': 'text/plain'}
 
@@ -76,11 +76,11 @@ def test():
         temp = 'Emulating'
         volt = ''
     
-    statusRemote['raspberry']['temp'] = temp
-    statusRemote['raspberry']['volt'] = volt
+    statusCar['raspberry']['temp'] = temp
+    statusCar['raspberry']['volt'] = volt
     
     response = app.response_class(
-        response=json.dumps(statusRemote),
+        response=json.dumps(statusCar),
         mimetype='application/json'
     )
     
@@ -96,10 +96,10 @@ def index():
 @app.route('/speed')
 def speed():
     """ Пришел запрос на управления роботом """
-    global statusRemote
+    global statusCar
     
     speedX, speedY = int(request.args.get('speedX')), int(request.args.get('speedY'))
-    statusRemote['car']['speed'] = (-1.0 *  speedY) / 100.0
+    statusCar['car']['speed'] = (-1.0 *  speedY) / 100.0
     
     send_cmd()
     
@@ -108,10 +108,10 @@ def speed():
 @app.route('/turn')
 def turn():
     """ Пришел запрос на управления роботом """
-    global statusRemote
+    global statusCar
     
     turnX, turnY = int(request.args.get('turnX')), int(request.args.get('turnY'))
-    statusRemote['car']['turn'] = turnX
+    statusCar['car']['turn'] = turnX
     
     send_cmd()
     
@@ -120,16 +120,16 @@ def turn():
 @app.route('/light')
 def light():
     """ Пришел запрос на управления роботом """
-    global statusRemote
+    global statusCar
     
     light = request.args.get('light')
     
-    statusRemote['car']['light'] = not statusRemote['car']['light']
+    statusCar['car']['light'] = not statusCar['car']['light']
     
     #if (light == 'false') :
-    #    statusRemote['car']['light'] = False
+    #    statusCar['car']['light'] = False
     #elif (light == 'true') :
-    #    statusRemote['car']['light'] = True
+    #    statusCar['car']['light'] = True
     
     send_cmd()
     
@@ -138,22 +138,22 @@ def light():
 @app.route('/winch')
 def winch():
     """ Пришел запрос на управления роботом """
-    global statusRemote
+    global statusCar
     #winchM = int(request.args.get('winch'))
     
     try:
-        statusRemote['car']['winch'] = int(request.args.get('winch'))
+        statusCar['car']['winch'] = int(request.args.get('winch'))
     except ValueError:
-        statusRemote['car']['winch'] = 0
+        statusCar['car']['winch'] = 0
     
     send_cmd()
     
     return '', 200, {'Content-Type': 'text/plain'}
 
 def send_cmd():
-    global statusRemote, TE
-    log.Print('[info]: data: web:', statusRemote)
-    TE.newStatus(statusRemote)
+    global statusCar, TE
+    log.Print('[info]: data: web:', statusCar)
+    TE.newStatus(statusCar)
 
 class RemoteWeb(Thread, conf.conf):
     def __init__(self): 
@@ -164,12 +164,12 @@ class RemoteWeb(Thread, conf.conf):
     
     def sender(self):
         """ функция цикличной отправки пакетов по uart """        
-        global sendFreq, dt_last_data, statusRemote
+        global sendFreq, dt_last_data, statusCar
         
         while True:
             dt_diff = time.time() - dt_last_data
             if (dt_diff >= conf.conf.dt_check) :
-                statusRemote = CarStatus().statusRemote
+                statusCar = CarStatus().statusCar
             
             send_cmd()
 

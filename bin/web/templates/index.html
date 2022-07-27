@@ -150,8 +150,14 @@
 <body>
     <script>
         // init section
-        var val_light = true;
+        //var val_light = true;
         var ping_status = true;
+        
+        var statusCar = {'network': {'wifi': False, 'video': False, 'control': False},
+                          'car': {'speed': 0, 'turn': 0, 'light': False, 'winch': 0},
+                          'video': {'VideoRate': conf.conf.VideoRate, 'VideoWidth': conf.conf.VideoWidth, 'VideoHeight': conf.conf.VideoHeight},
+                          'raspberry': {'temp': '', 'volt': ''}
+                        }
         
         
         // тест соединения со стороны клиента, если сервер перестанет получать
@@ -196,12 +202,18 @@
                     document.getElementById("checkOnline").innerHTML = "Control";
                     document.getElementById("checkOnline").style.color = "green";
                     
+                    statusCar.network.wifi = navigator.connection.type;
+                    statusCar.network.video = true;
+                    statusCar.network.control = true;
+
                     if (ping_status == false) {
                         window.location.reload(true);
                         //video_set(true);
                     }
-                    
+                                        
                     response.json().then(function(parsedJson) {
+                        
+                        statusCar = parsedJson;
                         //document.getElementById("checkStatus").innerHTML =  JSON.stringify(parsedJson);
                         document.getElementById("checkStatus").innerHTML = parsedJson.raspberry.temp + ", " + parsedJson.raspberry.volt;
                     })
@@ -211,15 +223,19 @@
                 .catch(error => {
                     document.getElementById("checkOnline").innerHTML = "Control";
                     document.getElementById("checkOnline").style.color = "red";
-                    
+
+                    statusCar.network.wifi = navigator.connection.type;
+                    statusCar.network.video = false;
+                    statusCar.network.control = false;
+                                        
+                    /*
                     if (ping_status == true) {
                         //video_set(false);
                     }
-                    
+                    //val_light = false;
+                    */
+                   
                     ping_status = false;
-                    
-                    val_light = false;
-                    
                 })
         }
             
@@ -335,17 +351,26 @@
     <div id="buttonLight" onclick="lightChange()"></div>
     <script type="text/javascript">
         function lightChange() {
-            if (val_light) 
-                val_light = false;
-            else 
-                val_light = true;
             
+            if (statusCar == null) {
+                return;
+            }
+            
+            statusCar.car.light = !statusCar.car.light;
+            /*
+            if (val_light) {
+                val_light = false;
+            } else {
+                val_light = true;
+            }
+            */
             lightSend();
         }
             
         function lightSend() {
             var xhttp = new XMLHttpRequest();
-            xhttp.open("GET", "light?light=" + val_light, true); 
+            //xhttp.open("GET", "light?light=" + val_light, true);
+            xhttp.open("GET", "light?light=" + statusCar.car.light, true); 
             xhttp.send();
         }
     </script>
